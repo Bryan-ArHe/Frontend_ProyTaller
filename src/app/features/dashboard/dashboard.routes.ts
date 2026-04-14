@@ -8,10 +8,96 @@ export const dashboardRoutes: Routes = [
     component: DashboardLayoutComponent,
     children: [
       { path: '', component: HomeComponent },
-      // Aquí irán las otras rutas hijas del dashboard
-      // { path: 'vehiculos', component: VehiculosComponent },
-      // { path: 'solicitar-auxilio', component: SolicitarAuxilioComponent },
-      // etc...
+      // Identidad y Accesos
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./views/perfil/perfil.component').then((m) => m.PerfilComponent),
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./views/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
+      },
+      // Cuentas y Vehículos
+      {
+        path: 'vehiculos',
+        loadComponent: () =>
+          import('../vehiculos/lista-vehiculos.component').then((m) => m.ListaVehiculosComponent),
+      },
+      {
+        path: 'vehiculos/nuevo',
+        loadComponent: () =>
+          import('../vehiculos/form-vehiculo.component').then((m) => m.FormVehiculoComponent),
+      },
+      {
+        path: 'talleres',
+        loadComponent: () =>
+          import('./views/talleres/talleres.component').then((m) => m.TalleresComponent),
+      },
+      {
+        path: 'tecnicos',
+        loadComponent: () =>
+          import('./views/tecnicos/tecnicos.component').then((m) => m.TecnicosComponent),
+      },
+      // Emergencias
+      {
+        path: 'reportar-incidente',
+        loadComponent: () =>
+          import('../incidentes/reportar-incidente.component').then(
+            (m) => m.ReportarIncidenteComponent,
+          ),
+      },
+      {
+        path: 'historial-incidentes',
+        loadComponent: () =>
+          import('./views/historial-incidentes/historial-incidentes.component').then(
+            (m) => m.HistorialIncidentesComponent,
+          ),
+      },
+      {
+        path: 'monitor-triaje',
+        loadComponent: () =>
+          import('./views/monitor-triaje/monitor-triaje.component').then(
+            (m) => m.MonitorTriajeComponent,
+          ),
+      },
+      // Despacho Operativo
+      {
+        path: 'ordenes-trabajo',
+        loadComponent: () =>
+          import('./views/ordenes-trabajo/ordenes-trabajo.component').then(
+            (m) => m.OrdenesTrabajoComponent,
+          ),
+      },
+      {
+        path: 'inventario-movil',
+        loadComponent: () =>
+          import('./views/inventario-movil/inventario-movil.component').then(
+            (m) => m.InventarioMovilComponent,
+          ),
+      },
+      // Telemetría
+      {
+        path: 'rastreo-vivo',
+        loadComponent: () =>
+          import('./views/rastreo-vivo/rastreo-vivo.component').then((m) => m.RastreoVivoComponent),
+      },
+      {
+        path: 'mensajes',
+        loadComponent: () =>
+          import('./views/mensajes/mensajes.component').then((m) => m.MensajesComponent),
+      },
+      // Finanzas
+      {
+        path: 'pagos',
+        loadComponent: () => import('./views/pagos/pagos.component').then((m) => m.PagosComponent),
+      },
+      {
+        path: 'comisiones',
+        loadComponent: () =>
+          import('./views/comisiones/comisiones.component').then((m) => m.ComisionesComponent),
+      },
     ],
   },
 ];

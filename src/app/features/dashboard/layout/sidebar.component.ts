@@ -3,13 +3,108 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
-interface NavItem {
+// ==================== INTERFACES ====================
+interface SubItem {
   label: string;
   path: string;
-  icon: string;
   roles: string[];
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: string;
+  subItems: SubItem[];
+}
+
+// ==================== CONSTANTES ====================
+const MENU_ITEMS: MenuItem[] = [
+  // Paquete 1: Identidad y Accesos
+  {
+    id: 'identidad',
+    label: 'Identidad y Accesos',
+    icon: '🔐',
+    subItems: [
+      { label: 'Mi Perfil', path: 'perfil', roles: ['admin', 'operador', 'tecnico', 'usuario'] },
+      { label: 'Gestión de Usuarios', path: 'usuarios', roles: ['admin'] },
+    ],
+  },
+
+  // Paquete 2: Cuentas y Vehículos
+  {
+    id: 'cuentas',
+    label: 'Cuentas y Vehículos',
+    icon: '🚙',
+    subItems: [
+      { label: 'Mis Vehículos', path: 'vehiculos', roles: ['usuario'] },
+      { label: 'Gestión de Talleres', path: 'talleres', roles: ['gestor_taller', 'admin'] },
+      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['gestor_taller', 'admin'] },
+    ],
+  },
+
+  // Paquete 3: Captura de Emergencias e IA
+  {
+    id: 'emergencias',
+    label: 'Captura de Emergencias',
+    icon: '🆘',
+    subItems: [
+      { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['usuario'] },
+      {
+        label: 'Historial de Incidentes',
+        path: 'historial-incidentes',
+        roles: ['usuario', 'admin'],
+      },
+      { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['admin'] },
+    ],
+  },
+
+  // Paquete 4: Despacho Operativo e Inventario
+  {
+    id: 'despacho',
+    label: 'Despacho Operativo',
+    icon: '⚙️',
+    subItems: [
+      {
+        label: 'Órdenes de Trabajo',
+        path: 'ordenes-trabajo',
+        roles: ['gestor_taller', 'tecnico', 'admin'],
+      },
+      { label: 'Mi Inventario Móvil', path: 'inventario-movil', roles: ['tecnico'] },
+    ],
+  },
+
+  // Paquete 5: Telemetría y Comunicación
+  {
+    id: 'telemetria',
+    label: 'Telemetría y Comunicación',
+    icon: '📡',
+    subItems: [
+      {
+        label: 'Rastreo en Vivo',
+        path: 'rastreo-vivo',
+        roles: ['usuario', 'gestor_taller', 'admin'],
+      },
+      {
+        label: 'Bandeja de Mensajes',
+        path: 'mensajes',
+        roles: ['admin', 'operador', 'tecnico', 'usuario'],
+      },
+    ],
+  },
+
+  // Paquete 6: Finanzas y B2B
+  {
+    id: 'finanzas',
+    label: 'Finanzas y B2B',
+    icon: '💰',
+    subItems: [
+      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['usuario', 'gestor_taller'] },
+      { label: 'Panel de Comisiones', path: 'comisiones', roles: ['admin'] },
+    ],
+  },
+];
+
+// ==================== COMPONENTE ====================
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -25,19 +120,52 @@ interface NavItem {
       </div>
 
       <!-- Navegación -->
-      <nav class="mt-8 px-4 pb-32">
-        <div class="space-y-2">
-          @for (item of visibleNavItems; track item.path) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="bg-blue-600 border-l-4 border-yellow-400"
-              class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+      <nav class="mt-8 px-4 pb-32 space-y-1">
+        @for (paquete of visiblePaquetes; track paquete.id) {
+          <div class="mb-4">
+            <!-- Botón del paquete (acordeón) -->
+            <button
+              (click)="togglePaquete(paquete.id)"
+              class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              [class.bg-blue-600]="expandedPaquete === paquete.id"
             >
-              <span class="text-xl">{{ item.icon }}</span>
-              <span class="font-medium">{{ item.label }}</span>
-            </a>
-          }
-        </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xl">{{ paquete.icon }}</span>
+                <span class="font-semibold text-sm">{{ paquete.label }}</span>
+              </div>
+              <svg
+                class="w-4 h-4 transition-transform duration-300"
+                [class.rotate-180]="expandedPaquete === paquete.id"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                />
+              </svg>
+            </button>
+
+            <!-- Sub-items (con animación) -->
+            @if (expandedPaquete === paquete.id) {
+              <div class="mt-2 ml-4 space-y-1 border-l-2 border-blue-500 pl-4">
+                @for (subItem of paquete.subItems; track subItem.path) {
+                  <a
+                    [routerLink]="subItem.path"
+                    routerLinkActive="bg-yellow-500 bg-opacity-20 border-l-2 border-yellow-400"
+                    class="flex items-center gap-2 px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    <span class="w-2 h-2 bg-blue-300 rounded-full"></span>
+                    <span>{{ subItem.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
       </nav>
 
       <!-- Información del usuario (al fondo) -->
@@ -56,22 +184,7 @@ export class SidebarComponent {
 
   userEmail = '';
   userRole = '';
-
-  readonly allNavItems: NavItem[] = [
-    { label: 'Inicio', path: '', icon: '🏠', roles: ['admin', 'operador', 'usuario', 'tecnico'] },
-    { label: 'Mis Vehículos', path: 'vehiculos', icon: '🚙', roles: ['usuario'] },
-    { label: 'Solicitar Auxilio', path: 'solicitar-auxilio', icon: '🆘', roles: ['usuario'] },
-    { label: 'Mis Solicitudes', path: 'mis-solicitudes', icon: '📋', roles: ['usuario'] },
-    { label: 'Órdenes Activas', path: 'ordenes', icon: '⚙️', roles: ['operador', 'tecnico'] },
-    { label: 'Gestión Global', path: 'gestion', icon: '⚡', roles: ['admin'] },
-    { label: 'Usuarios', path: 'usuarios', icon: '👥', roles: ['admin'] },
-    { label: 'Reportes', path: 'reportes', icon: '📊', roles: ['admin', 'operador'] },
-  ];
-
-  get visibleNavItems(): NavItem[] {
-    const userRole = this.userRole.toLowerCase();
-    return this.allNavItems.filter((item) => item.roles.includes(userRole));
-  }
+  expandedPaquete = 'identidad'; // Paquete expandido por defecto
 
   constructor() {
     this.authService.user$.subscribe((user) => {
@@ -82,12 +195,45 @@ export class SidebarComponent {
     });
   }
 
+  /**
+   * Obtiene los paquetes visibles filtrados por rol
+   */
+  get visiblePaquetes(): MenuItem[] {
+    const userRole = this.userRole.toLowerCase();
+    return MENU_ITEMS.map((paquete) => ({
+      ...paquete,
+      subItems: paquete.subItems.filter((item) => this.hasRole(item.roles)),
+    })).filter((paquete) => paquete.subItems.length > 0);
+  }
+
+  /**
+   * Verificar si el usuario tiene el rol requerido
+   */
+  private hasRole(itemRoles: string[]): boolean {
+    return itemRoles.includes(this.userRole.toLowerCase());
+  }
+
+  /**
+   * Toggle para expandir/colapsar un paquete
+   */
+  togglePaquete(paqueteId: string): void {
+    if (this.expandedPaquete === paqueteId) {
+      this.expandedPaquete = '';
+    } else {
+      this.expandedPaquete = paqueteId;
+    }
+  }
+
+  /**
+   * Mapear id_rol a nombre descriptivo
+   */
   private getRoleName(id_rol: number): string {
     const roleMap: { [key: number]: string } = {
       1: 'admin',
       2: 'operador',
       3: 'tecnico',
       4: 'usuario',
+      5: 'gestor_taller',
     };
     return roleMap[id_rol] || 'usuario';
   }

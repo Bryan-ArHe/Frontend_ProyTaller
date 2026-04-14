@@ -60,6 +60,10 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  getCurrentUser(): UsuarioResponse | null {
+    return this.userSubject.value;
+  }
+
   private setToken(token: string): void {
     sessionStorage.setItem(this.tokenKey, token);
   }
