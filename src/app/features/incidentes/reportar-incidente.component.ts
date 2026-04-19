@@ -33,14 +33,17 @@ import { IncidenteRequest } from '../../core/models/incidente.model';
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
                 Latitud
-                @if (!ubicacionObtenida) {
+                @if (!ubicacionObtenida && !obteniendoUbicacion) {
                   <button
                     type="button"
                     (click)="obtenerUbicacion()"
-                    class="ml-2 text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                    class="ml-2 text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
                   >
                     📍 Obtener
                   </button>
+                }
+                @if (obteniendoUbicacion) {
+                  <span class="ml-2 text-xs text-blue-500 animate-pulse">⏳ Obteniendo...</span>
                 }
               </label>
               <input
@@ -48,11 +51,11 @@ import { IncidenteRequest } from '../../core/models/incidente.model';
                 formControlName="latitud"
                 placeholder="Ej: 4.7110"
                 step="0.0001"
+                (blur)="validarCoordenadasManuales()"
                 class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-600 transition-colors"
-                readonly
               />
               @if (form.get('latitud')?.touched && form.get('latitud')?.invalid) {
-                <p class="text-red-600 text-sm mt-1">Latitud requerida</p>
+                <p class="text-red-600 text-sm mt-1">Latitud inválida (-90 a 90)</p>
               }
             </div>
 
@@ -63,18 +66,18 @@ import { IncidenteRequest } from '../../core/models/incidente.model';
                 formControlName="longitud"
                 placeholder="Ej: -74.0721"
                 step="0.0001"
+                (blur)="validarCoordenadasManuales()"
                 class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-600 transition-colors"
-                readonly
               />
               @if (form.get('longitud')?.touched && form.get('longitud')?.invalid) {
-                <p class="text-red-600 text-sm mt-1">Longitud requerida</p>
+                <p class="text-red-600 text-sm mt-1">Longitud inválida (-180 a 180)</p>
               }
             </div>
           </div>
 
           @if (errorUbicacion) {
             <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-              <p class="text-yellow-700">⚠️ {{ errorUbicacion }}</p>
+              <p class="text-yellow-700">{{ errorUbicacion }}</p>
             </div>
           }
 
@@ -177,43 +180,110 @@ export class ReportarIncidenteComponent implements OnInit {
   private readonly router = inject(Router);
 
   form = this.fb.nonNullable.group({
-    latitud: [0, [Validators.required]],
-    longitud: [0, [Validators.required]],
+    latitud: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
+    longitud: [0, [Validators.required, Validators.min(-180), Validators.max(180)]],
     descripcion: ['', [Validators.required, Validators.minLength(10)]],
   });
 
   evidencias: string[] = [];
   ubicacionObtenida = false;
+  obteniendoUbicacion = false;
   enviando = false;
   error: string | null = null;
   errorUbicacion: string | null = null;
 
   ngOnInit(): void {
+    // Intentar obtener ubicación automáticamente
     this.obtenerUbicacion();
   }
 
   /**
-   * Obtiene la ubicación actual del usuario
+   * Obtiene la ubicación actual del usuario con validaciones robustas
    */
   obtenerUbicacion(): void {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.form.patchValue({
-            latitud: position.coords.latitude,
-            longitud: position.coords.longitude,
-          });
-          this.ubicacionObtenida = true;
-          this.errorUbicacion = null;
-        },
-        (error) => {
-          console.error('Error obteniendo ubicación:', error);
-          this.errorUbicacion =
-            'No se pudo obtener tu ubicación. Ingresa las coordenadas manualmente.';
-        },
-      );
-    } else {
-      this.errorUbicacion = 'Tu navegador no soporta geolocalización.';
+    if (!navigator.geolocation) {
+      this.errorUbicacion =
+        '❌ Tu navegador no soporta geolocalización. Ingresa las coordenadas manualmente.';
+      return;
+    }
+
+    this.obteniendoUbicacion = true;
+    this.errorUbicacion = null;
+
+    // Opciones para getCurrentPosition con alta precisión
+    const geoOptions: PositionOptions = {
+      enableHighAccuracy: true, // Solicita máxima precisión
+      timeout: 10000, // 10 segundos de timeout
+      maximumAge: 0, // No usar ubicación en cache
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+
+        // Validar coordenadas
+        if (!this.validarCoordenadas(latitude, longitude)) {
+          this.errorUbicacion = '❌ Las coordenadas obtenidas no son válidas. Intenta de nuevo.';
+          this.obteniendoUbicacion = false;
+          return;
+        }
+
+        // Redondear a 4 decimales para precisión
+        this.form.patchValue({
+          latitud: Math.round(latitude * 10000) / 10000,
+          longitud: Math.round(longitude * 10000) / 10000,
+        });
+
+        this.ubicacionObtenida = true;
+        this.obteniendoUbicacion = false;
+        this.errorUbicacion = null;
+
+        console.log(`✅ Ubicación obtenida con precisión: ±${Math.round(accuracy)}m`);
+      },
+      (error) => {
+        this.obteniendoUbicacion = false;
+        console.error('Error de geolocalización:', error);
+
+        // Mensajes específicos según el tipo de error
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            this.errorUbicacion =
+              '🚫 Permiso denegado. Habilita la geolocalización en tu navegador.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            this.errorUbicacion =
+              '📍 Ubicación no disponible. Intenta desde otro lugar o ingresa manualmente.';
+            break;
+          case error.TIMEOUT:
+            this.errorUbicacion = '⏱️ Tiempo agotado. Intenta de nuevo.';
+            break;
+          default:
+            this.errorUbicacion = '❌ Error al obtener ubicación. Ingresa manualmente.';
+        }
+      },
+      geoOptions,
+    );
+  }
+
+  /**
+   * Valida que las coordenadas sean válidas
+   */
+  private validarCoordenadas(lat: number, lng: number): boolean {
+    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  }
+
+  /**
+   * Valida coordenadas ingresadas manualmente
+   */
+  validarCoordenadasManuales(): void {
+    const lat = this.form.get('latitud')?.value ?? 0;
+    const lng = this.form.get('longitud')?.value ?? 0;
+
+    if (lat && lng && this.validarCoordenadas(lat, lng)) {
+      this.ubicacionObtenida = true;
+      this.errorUbicacion = null;
+    } else if (lat !== 0 || lng !== 0) {
+      this.errorUbicacion = '❌ Coordenadas inválidas. Lat: -90 a 90, Lng: -180 a 180.';
     }
   }
 
@@ -235,8 +305,15 @@ export class ReportarIncidenteComponent implements OnInit {
    * Envía el reporte de incidente
    */
   onSubmit(): void {
+    // Validar ubicación primero
+    if (!this.ubicacionObtenida) {
+      this.errorUbicacion = '⚠️ Debes obtener o ingresar tu ubicación.';
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error = '❌ Por favor completa todos los campos correctamente.';
       return;
     }
 
@@ -253,12 +330,13 @@ export class ReportarIncidenteComponent implements OnInit {
     this.incidenteService.reportarIncidente(payload).subscribe({
       next: (respuesta) => {
         this.enviando = false;
-        alert('✅ Reporte enviado exitosamente. Tu ID de emergencia es: ' + respuesta.id);
-        void this.router.navigate(['dashboard']);
+        alert(`✅ ¡EMERGENCIA REPORTADA!\n\nID: ${respuesta.id}\nEquipo en camino...`);
+        void this.router.navigate(['dashboard', 'historial-incidentes']);
       },
       error: (err) => {
         console.error('Error reportando incidente:', err);
-        this.error = err.error?.detail ?? 'No se pudo enviar el reporte';
+        this.error =
+          err.detalle || err.error?.detail || '❌ Error al enviar reporte. Intenta de nuevo.';
         this.enviando = false;
       },
     });

@@ -9,20 +9,34 @@ export interface Modelo {
   id_marca: number;
 }
 
-export interface VehiculoRequest {
+export interface Vehiculo {
+  id: number;
+  id_cliente: number;
   placa: string;
-  color: string;
+  marca: string;
+  modelo: string;
+  color?: string;
   anio: number;
-  id_modelo: number;
 }
 
-export interface VehiculoResponse {
-  id: number;
+export interface VehiculoRequest {
   placa: string;
-  color: string;
-  anio: number;
+  id_marca: number;
   id_modelo: number;
+  color?: string;
+  anio: number;
+}
+
+export interface VehiculoUpdate {
+  placa?: string;
+  color?: string;
+  anio?: number;
+}
+
+export interface VehiculoResponse extends Vehiculo {
+  id: number;
   marca_nombre: string;
   modelo_nombre: string;
-  created_at: string;
+  created_at?: string;
+  updated_at?: string;
 }

@@ -4,10 +4,11 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import { LoginData, TokenResponse, UsuarioCreate, UsuarioResponse } from '../models/auth.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = 'http://localhost:8000/auth';
+  private readonly baseUrl = `${environment.apiUrl}/auth`;
   private readonly tokenKey = 'access_token';
 
   private readonly userSubject = new BehaviorSubject<UsuarioResponse | null>(null);
@@ -28,20 +29,20 @@ export class AuthService {
       .pipe(
         tap((res) => this.setToken(res.access_token)),
         switchMap(() => this.me()),
-        catchError((error: HttpErrorResponse) => this.handleError(error)),
+        catchError((error: HttpErrorResponse) => this.handleError('Error en login', error)),
       );
   }
 
   register(data: UsuarioCreate): Observable<UsuarioResponse> {
     return this.http
       .post<UsuarioResponse>(`${this.baseUrl}/register`, data)
-      .pipe(catchError((error: HttpErrorResponse) => this.handleError(error)));
+      .pipe(catchError((error: HttpErrorResponse) => this.handleError('Error en registro', error)));
   }
 
   me(): Observable<UsuarioResponse> {
     return this.http.get<UsuarioResponse>(`${this.baseUrl}/me`).pipe(
       tap((user) => this.userSubject.next(user)),
-      catchError((error: HttpErrorResponse) => this.handleError(error)),
+      catchError((error: HttpErrorResponse) => this.handleError('Error obteniendo usuario', error)),
     );
   }
 
@@ -68,7 +69,12 @@ export class AuthService {
     sessionStorage.setItem(this.tokenKey, token);
   }
 
-  private handleError(error: HttpErrorResponse) {
-    return throwError(() => error);
+  private handleError(mensaje: string, error: HttpErrorResponse) {
+    console.error(`${mensaje}:`, error);
+    return throwError(() => ({
+      mensaje,
+      status: error.status,
+      detalle: error.error?.detail || error.message,
+    }));
   }
 }
