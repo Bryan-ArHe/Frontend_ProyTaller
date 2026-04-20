@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import {
   UsuarioPerfil,
   ActualizarPerfilData,
@@ -18,19 +18,19 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class UsuarioService {
-  private readonly baseUrl = `${environment.apiUrl}/api/usuarios`;
-  private readonly authUrl = `${environment.apiUrl}/auth`;
-
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  // ✅ URL SIN /api - el backend NO tiene ese prefijo
+  private readonly baseUrl = `${environment.apiUrl}/usuarios`;
 
   // ==================== MI PERFIL ====================
 
   /**
    * Obtiene el perfil del usuario autenticado
+   * GET /usuarios/me
    */
   getMiPerfil(): Observable<UsuarioPerfil> {
     return this.http
-      .get<UsuarioPerfil>(`${this.authUrl}/me`)
+      .get<UsuarioPerfil>(`${this.baseUrl}/me`)
       .pipe(
         catchError((error: HttpErrorResponse) =>
           this.handleError('Error obteniendo tu perfil', error),
@@ -40,10 +40,11 @@ export class UsuarioService {
 
   /**
    * Actualiza el perfil del usuario autenticado
+   * PUT /usuarios/me
    */
   actualizarMiPerfil(data: ActualizarPerfilData): Observable<UsuarioPerfil> {
     return this.http
-      .put<UsuarioPerfil>(`${this.authUrl}/me`, data)
+      .put<UsuarioPerfil>(`${this.baseUrl}/me`, data)
       .pipe(
         catchError((error: HttpErrorResponse) =>
           this.handleError('Error actualizando tu perfil', error),
@@ -53,10 +54,15 @@ export class UsuarioService {
 
   /**
    * Cambia la contraseña del usuario autenticado
+   * PUT /usuarios/me
+   * Envía la contraseña actual y la nueva contraseña
    */
-  cambiarPassword(data: CambiarPasswordData): Observable<{ message: string }> {
+  cambiarPassword(data: CambiarPasswordData): Observable<UsuarioPerfil> {
     return this.http
-      .post<{ message: string }>(`${this.authUrl}/cambiar-password`, data)
+      .put<UsuarioPerfil>(`${this.baseUrl}/me`, {
+        password_actual: data.password_actual,
+        password_nueva: data.password_nueva,
+      })
       .pipe(
         catchError((error: HttpErrorResponse) =>
           this.handleError('Error cambiando contraseña', error),
@@ -68,33 +74,24 @@ export class UsuarioService {
 
   /**
    * Obtiene el listado de todos los usuarios (solo admin)
+   * GET /usuarios/
+   *
+   * El backend devuelve un array directo, se mapea a la estructura paginada
    */
-  getTodosLosUsuarios(
-    pagina: number = 1,
-    porPagina: number = 50,
-  ): Observable<ListadoUsuariosResponse> {
-    return this.http
-      .get<ListadoUsuariosResponse>(`${this.baseUrl}?pagina=${pagina}&por_pagina=${porPagina}`)
-      .pipe(
-        catchError((error: HttpErrorResponse) =>
-          this.handleError('Error cargando usuarios', error),
-        ),
-      );
+  getTodosLosUsuarios(): Observable<ListadoUsuariosResponse> {
+    return this.http.get<UsuarioListado[]>(`${this.baseUrl}/`).pipe(
+      // Mapear el array a la estructura { usuarios: [...], total: number }
+      map((usuarios) => ({
+        usuarios,
+        total: usuarios.length,
+      })),
+      catchError((error: HttpErrorResponse) => this.handleError('Error cargando usuarios', error)),
+    );
   }
 
   /**
-   * Obtiene un usuario por ID
-   */
-  getUsuario(id: number): Observable<UsuarioPerfil> {
-    return this.http
-      .get<UsuarioPerfil>(`${this.baseUrl}/${id}`)
-      .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError('Error cargando usuario', error)),
-      );
-  }
-
-  /**
-   * Cambia el estado de un usuario (ACTIVO/BLOQUEADO/INACTIVO)
+   * Cambia el estado de un usuario (ACTIVO/INACTIVO)
+   * PATCH /usuarios/{id}/estado
    */
   cambiarEstadoUsuario(
     idUsuario: number,
@@ -111,6 +108,7 @@ export class UsuarioService {
 
   /**
    * Asigna un rol a un usuario
+   * PATCH /usuarios/{id}/rol
    */
   asignarRol(idUsuario: number, data: AsignarRolData): Observable<UsuarioPerfil> {
     return this.http
@@ -122,6 +120,7 @@ export class UsuarioService {
 
   /**
    * Elimina un usuario (solo admin)
+   * DELETE /usuarios/{id}
    */
   eliminarUsuario(id: number): Observable<{ message: string }> {
     return this.http
