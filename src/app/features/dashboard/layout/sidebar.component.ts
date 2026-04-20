@@ -28,7 +28,7 @@ const MENU_ITEMS: MenuItem[] = [
       {
         label: 'Mi Perfil',
         path: 'perfil',
-        roles: ['admin', 'operador', 'tecnico', 'usuario', 'gestor_taller'],
+        roles: ['admin', 'tecnico', 'cliente', 'gestor_taller'],
       },
       { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['admin'] },
       { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['admin'] },
@@ -41,7 +41,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Cuentas y Vehículos',
     icon: '🚙',
     subItems: [
-      { label: 'Mis Vehículos', path: 'vehiculos', roles: ['usuario'] },
+      { label: 'Mis Vehículos', path: 'vehiculos', roles: ['cliente'] },
       { label: 'Gestión de Talleres', path: 'talleres', roles: ['gestor_taller', 'admin'] },
       { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['gestor_taller', 'admin'] },
     ],
@@ -53,11 +53,11 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Captura de Emergencias',
     icon: '🆘',
     subItems: [
-      { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['usuario'] },
+      { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['cliente'] },
       {
         label: 'Historial de Incidentes',
         path: 'historial-incidentes',
-        roles: ['usuario', 'admin'],
+        roles: ['cliente', 'admin'],
       },
       { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['admin'] },
     ],
@@ -87,12 +87,12 @@ const MENU_ITEMS: MenuItem[] = [
       {
         label: 'Rastreo en Vivo',
         path: 'rastreo-vivo',
-        roles: ['usuario', 'gestor_taller', 'admin'],
+        roles: ['cliente', 'gestor_taller', 'admin'],
       },
       {
         label: 'Bandeja de Mensajes',
         path: 'mensajes',
-        roles: ['admin', 'operador', 'tecnico', 'usuario'],
+        roles: ['admin', 'tecnico', 'cliente'],
       },
     ],
   },
@@ -103,7 +103,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Finanzas y B2B',
     icon: '💰',
     subItems: [
-      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['usuario', 'gestor_taller'] },
+      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['cliente', 'gestor_taller'] },
       { label: 'Panel de Comisiones', path: 'comisiones', roles: ['admin'] },
     ],
   },
@@ -235,11 +235,10 @@ export class SidebarComponent {
   private getRoleName(id_rol: number): string {
     const roleMap: { [key: number]: string } = {
       1: 'admin',
-      2: 'operador',
-      3: 'tecnico',
-      4: 'usuario',
-      5: 'gestor_taller',
+      2: 'tecnico',
+      3: 'cliente',
+      4: 'gestor_taller',
     };
-    return roleMap[id_rol] || 'usuario';
+    return roleMap[id_rol] || 'cliente';
   }
 }

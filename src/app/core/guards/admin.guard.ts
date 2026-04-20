@@ -24,8 +24,8 @@ export const AdminGuard: CanActivateFn = (route, state) => {
   const esAdmin =
     (currentUser.rol &&
       typeof currentUser.rol === 'object' &&
-      currentUser.rol.nombre === 'ADMINISTRADOR') ||
-    (typeof currentUser.rol === 'string' && currentUser.rol === 'ADMINISTRADOR');
+      currentUser.rol.nombre === 'admin') ||
+    (typeof currentUser.rol === 'string' && currentUser.rol === 'admin');
 
   if (!esAdmin) {
     console.warn(

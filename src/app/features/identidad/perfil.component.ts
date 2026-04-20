@@ -8,11 +8,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario.service';
-import {
-  UsuarioPerfil,
-  ActualizarPerfilData,
-  CambiarPasswordData,
-} from '../../core/models/usuario.model';
+import { UsuarioPerfil, ActualizarPerfilData } from '../../core/models/usuario.model';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -243,113 +239,6 @@ import { Subject, takeUntil } from 'rxjs';
               </div>
             }
           </div>
-
-          <!-- TARJETA 2: CAMBIAR CONTRASEÑA -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="mb-6">
-              <h2 class="text-xl font-bold text-gray-900">Cambiar Contraseña</h2>
-              <p class="text-gray-600 text-sm mt-1">
-                Actualiza tu contraseña para mantener tu cuenta segura
-              </p>
-            </div>
-
-            <form [formGroup]="formPassword" (ngSubmit)="cambiarPassword()" class="space-y-4">
-              <!-- Contraseña actual -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Contraseña Actual</label
-                >
-                <input
-                  type="password"
-                  formControlName="password_actual"
-                  placeholder="Ingresa tu contraseña actual"
-                  class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-600 transition-colors"
-                />
-                @if (
-                  formPassword.get('password_actual')?.invalid &&
-                  formPassword.get('password_actual')?.touched
-                ) {
-                  <p class="text-red-600 text-sm mt-1">Contraseña requerida</p>
-                }
-              </div>
-
-              <!-- Nueva contraseña -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Nueva Contraseña</label
-                >
-                <input
-                  type="password"
-                  formControlName="password_nueva"
-                  placeholder="Mínimo 8 caracteres"
-                  class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-600 transition-colors"
-                />
-                @if (
-                  formPassword.get('password_nueva')?.invalid &&
-                  formPassword.get('password_nueva')?.touched
-                ) {
-                  <p class="text-red-600 text-sm mt-1">Mínimo 8 caracteres</p>
-                }
-              </div>
-
-              <!-- Confirmar contraseña -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2"
-                  >Confirmar Contraseña</label
-                >
-                <input
-                  type="password"
-                  formControlName="password_confirmacion"
-                  placeholder="Repite la nueva contraseña"
-                  class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-600 transition-colors"
-                />
-                @if (
-                  formPassword.get('password_confirmacion')?.invalid &&
-                  formPassword.get('password_confirmacion')?.touched
-                ) {
-                  <p class="text-red-600 text-sm mt-1">Confirmación requerida</p>
-                }
-              </div>
-
-              <!-- Validación de contraseñas coinciden -->
-              @if (
-                formPassword.errors?.['passwordMismatch'] &&
-                formPassword.get('password_confirmacion')?.touched
-              ) {
-                <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-                  <p class="text-yellow-700">⚠️ Las contraseñas no coinciden</p>
-                </div>
-              }
-
-              <!-- Mensaje de error -->
-              @if (errorPassword) {
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p class="text-red-700">❌ {{ errorPassword }}</p>
-                </div>
-              }
-
-              <!-- Mensaje de éxito -->
-              @if (exitoPassword) {
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p class="text-green-700">✅ {{ exitoPassword }}</p>
-                </div>
-              }
-
-              <!-- Botón de envío -->
-              <button
-                type="submit"
-                [disabled]="formPassword.invalid || cambiadoPassword"
-                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
-              >
-                @if (cambiadoPassword) {
-                  <span class="animate-spin">⚙️</span>
-                  <span>Cambiando contraseña...</span>
-                } @else {
-                  Cambiar Contraseña
-                }
-              </button>
-            </form>
-          </div>
         }
       </div>
     </div>
@@ -364,15 +253,12 @@ export class PerfilComponent implements OnInit, OnDestroy {
   cargando = false;
   editandoPerfil = false;
   guardandoPerfil = false;
-  cambiadoPassword = false;
 
   // Datos
   perfil: UsuarioPerfil | null = null;
 
   // Errores y éxito
   errorPerfil: string | null = null;
-  errorPassword: string | null = null;
-  exitoPassword: string | null = null;
 
   // Formularios
   formPerfil = this.fb.nonNullable.group(
@@ -385,15 +271,6 @@ export class PerfilComponent implements OnInit, OnDestroy {
       password_confirmacion: [''],
     },
     { validators: this.passwordOptionalValidator },
-  );
-
-  formPassword = this.fb.nonNullable.group(
-    {
-      password_actual: ['', Validators.required],
-      password_nueva: ['', [Validators.required, Validators.minLength(8)]],
-      password_confirmacion: ['', Validators.required],
-    },
-    { validators: this.passwordMatchValidator },
   );
 
   ngOnInit(): void {
@@ -488,39 +365,6 @@ export class PerfilComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cambia la contraseña del usuario
-   */
-  cambiarPassword(): void {
-    if (this.formPassword.invalid) {
-      this.formPassword.markAllAsTouched();
-      return;
-    }
-
-    this.cambiadoPassword = true;
-    this.errorPassword = null;
-    this.exitoPassword = null;
-
-    const data: CambiarPasswordData = this.formPassword.getRawValue();
-
-    this.usuarioService
-      .cambiarPassword(data)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.cambiadoPassword = false;
-          this.exitoPassword = '✅ Contraseña cambiada exitosamente';
-          this.formPassword.reset();
-          setTimeout(() => (this.exitoPassword = null), 5000);
-        },
-        error: (err) => {
-          console.error('Error cambiando contraseña:', err);
-          this.errorPassword = err.detalle || 'Error cambiando tu contraseña';
-          this.cambiadoPassword = false;
-        },
-      });
-  }
-
-  /**
    * Validador personalizado: verifica que las contraseñas coincidan (si se proporcionan)
    * Las contraseñas son opcionales en la edición de perfil
    */
@@ -544,20 +388,6 @@ export class PerfilComponent implements OnInit, OnDestroy {
       if (password !== confirmPassword) {
         return { passwordMismatch: true };
       }
-    }
-
-    return null;
-  }
-
-  /**
-   * Validador personalizado para el formulario de cambio de contraseña
-   */
-  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password_nueva')?.value;
-    const confirmPassword = control.get('password_confirmacion')?.value;
-
-    if (password && confirmPassword && password !== confirmPassword) {
-      return { passwordMismatch: true };
     }
 
     return null;

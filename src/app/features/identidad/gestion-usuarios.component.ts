@@ -196,10 +196,10 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
 
   // Roles disponibles (mock, idealmente vendría del backend)
   rolesDisponibles: Rol[] = [
-    { id_rol: 1, nombre: 'ADMINISTRADOR', descripcion: 'Acceso total' },
-    { id_rol: 2, nombre: 'CLIENTE', descripcion: 'Cliente de plataforma' },
-    { id_rol: 3, nombre: 'GESTOR_TALLER', descripcion: 'Gestor de taller' },
-    { id_rol: 4, nombre: 'TECNICO', descripcion: 'Técnico' },
+    { id_rol: 1, nombre: 'admin', descripcion: 'Administrador con acceso total' },
+    { id_rol: 2, nombre: 'tecnico', descripcion: 'Técnico de servicio' },
+    { id_rol: 3, nombre: 'cliente', descripcion: 'Cliente de plataforma' },
+    { id_rol: 4, nombre: 'gestor_taller', descripcion: 'Gestor de taller' },
   ];
 
   ngOnInit(): void {
