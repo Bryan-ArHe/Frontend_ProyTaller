@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
 import { HomeComponent } from './views/home/home.component';
+import { AdminGuard } from '../../core/guards/admin.guard';
 
 export const dashboardRoutes: Routes = [
   {
@@ -11,13 +12,19 @@ export const dashboardRoutes: Routes = [
       // Identidad y Accesos
       {
         path: 'perfil',
-        loadComponent: () =>
-          import('./views/perfil/perfil.component').then((m) => m.PerfilComponent),
+        loadComponent: () => import('../identidad/perfil.component').then((m) => m.PerfilComponent),
       },
       {
-        path: 'usuarios',
+        path: 'gestion-usuarios',
         loadComponent: () =>
-          import('./views/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
+          import('../identidad/gestion-usuarios.component').then((m) => m.GestionUsuariosComponent),
+        canActivate: [AdminGuard],
+      },
+      {
+        path: 'gestion-roles',
+        loadComponent: () =>
+          import('../identidad/gestion-roles.component').then((m) => m.GestionRolesComponent),
+        canActivate: [AdminGuard],
       },
       // Cuentas y Vehículos
       {

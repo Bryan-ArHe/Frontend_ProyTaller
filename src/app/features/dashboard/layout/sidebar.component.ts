@@ -25,8 +25,13 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Identidad y Accesos',
     icon: '🔐',
     subItems: [
-      { label: 'Mi Perfil', path: 'perfil', roles: ['admin', 'operador', 'tecnico', 'usuario'] },
-      { label: 'Gestión de Usuarios', path: 'usuarios', roles: ['admin'] },
+      {
+        label: 'Mi Perfil',
+        path: 'perfil',
+        roles: ['admin', 'operador', 'tecnico', 'usuario', 'gestor_taller'],
+      },
+      { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['admin'] },
+      { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['admin'] },
     ],
   },
 
