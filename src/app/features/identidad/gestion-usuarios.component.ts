@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, AfterViewInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario.service';
+import { RolService } from '../../core/services/rol.service';
 import {
   UsuarioListado,
   ListadoUsuariosResponse,
@@ -78,11 +79,11 @@ interface UsuarioConRolObj extends UsuarioListado {
                       <td class="px-6 py-4">
                         <div>
                           <p class="font-semibold text-gray-900">{{ usuario.email }}</p>
-                          @if (usuario.nombres || usuario.razon_social) {
+                          @if (usuario.nombre || usuario.razon_social) {
                             <p class="text-xs text-gray-600">
                               {{
-                                usuario.nombres
-                                  ? usuario.nombres + ' ' + (usuario.apellidos || '')
+                                usuario.nombre
+                                  ? usuario.nombre + ' ' + (usuario.apellido || '')
                                   : usuario.razon_social
                               }}
                             </p>
@@ -93,24 +94,48 @@ interface UsuarioConRolObj extends UsuarioListado {
                       <!-- Teléfono -->
                       <td class="px-6 py-4 text-gray-600">{{ usuario.telefono || '-' }}</td>
 
-                      <!-- Rol (Select) -->
+                      <!-- Rol (Select + Botones) -->
                       <td class="px-6 py-4">
-                        <select
-                          [(ngModel)]="selectRolUsuario[usuario.id_usuario]"
-                          (change)="
-                            cambiarRol(usuario.id_usuario, selectRolUsuario[usuario.id_usuario])
-                          "
-                          [disabled]="cambiandoRol[usuario.id_usuario]"
-                          class="border-2 border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-blue-600 disabled:bg-gray-100"
-                        >
-                          <option value="">Selecciona rol...</option>
-                          @for (rol of rolesDisponibles; track rol.id_rol) {
-                            <option [value]="rol.id_rol">{{ rol.nombre }}</option>
+                        <div class="space-y-2">
+                          <div class="flex items-center gap-2">
+                            <select
+                              [(ngModel)]="selectRolUsuario[usuario.id_usuario]"
+                              [disabled]="cambiandoRol[usuario.id_usuario]"
+                              class="border-2 border-gray-300 rounded-lg px-3 py-1 text-sm flex-1 focus:outline-none focus:border-blue-600 disabled:bg-gray-100"
+                            >
+                              @for (rol of rolesDisponibles(); track rol.id_rol) {
+                                <option [value]="rol.id_rol">{{ rol.nombre }}</option>
+                              }
+                            </select>
+                          
+                          </div>
+
+                          @if (
+                            selectRolUsuario[usuario.id_usuario] &&
+                            selectRolUsuario[usuario.id_usuario] !== rolOriginal[usuario.id_usuario]
+                          ) {
+                            <div class="flex gap-2">
+                              <button
+                                (click)="guardarRol(usuario.id_usuario)"
+                                [disabled]="cambiandoRol[usuario.id_usuario]"
+                                class="flex-1 px-2 py-1 text-xs font-semibold rounded bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50"
+                              >
+                                @if (cambiandoRol[usuario.id_usuario]) {
+                                  <span>⚙️</span>
+                                } @else {
+                                  ✅ Guardar
+                                }
+                              </button>
+                              <button
+                                (click)="cancelarRol(usuario.id_usuario)"
+                                [disabled]="cambiandoRol[usuario.id_usuario]"
+                                class="flex-1 px-2 py-1 text-xs font-semibold rounded bg-gray-300 hover:bg-gray-400 text-gray-700 transition-colors disabled:opacity-50"
+                              >
+                                ❌ Cancelar
+                              </button>
+                            </div>
                           }
-                        </select>
-                        @if (cambiandoRol[usuario.id_usuario]) {
-                          <p class="text-xs text-blue-600 mt-1">Actualizando...</p>
-                        }
+                        </div>
                       </td>
 
                       <!-- Estado (Badge) -->
@@ -121,17 +146,17 @@ interface UsuarioConRolObj extends UsuarioListado {
                           >
                             ✅ Activo
                           </span>
-                        } @else if (usuario.estado_cuenta === 'BLOQUEADO') {
+                        } @else if (usuario.estado_cuenta === 'INACTIVO') {
                           <span
                             class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
                           >
-                            🚫 Bloqueado
+                            ⏸️ Inactivo
                           </span>
                         } @else {
                           <span
                             class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold"
                           >
-                            ⏸️ Inactivo
+                            ❓ Desconocido
                           </span>
                         }
                       </td>
@@ -146,13 +171,13 @@ interface UsuarioConRolObj extends UsuarioListado {
                             'bg-red-50 hover:bg-red-100 text-red-600':
                               usuario.estado_cuenta === 'ACTIVO',
                             'bg-green-50 hover:bg-green-100 text-green-600':
-                              usuario.estado_cuenta === 'BLOQUEADO',
+                              usuario.estado_cuenta === 'INACTIVO',
                           }"
                         >
                           @if (cambiadoEstado[usuario.id_usuario]) {
                             <span class="animate-spin">⚙️</span>
                           } @else if (usuario.estado_cuenta === 'ACTIVO') {
-                            Bloquear
+                            Desactivar
                           } @else {
                             Activar
                           }
@@ -180,30 +205,33 @@ interface UsuarioConRolObj extends UsuarioListado {
     </div>
   `,
 })
-export class GestionUsuariosComponent implements OnInit, OnDestroy {
+export class GestionUsuariosComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly usuarioService = inject(UsuarioService);
+  private readonly rolService = inject(RolService);
   private destroy$ = new Subject<void>();
 
   // Signals para reactividad
   usuarios = signal<UsuarioListado[]>([]);
   cargando = signal(false);
   error = signal<string | null>(null);
+  rolesDisponibles = signal<Rol[]>([]);
 
   // Estado de acciones
   cambiadoEstado: { [key: number]: boolean } = {};
   cambiandoRol: { [key: number]: boolean } = {};
   selectRolUsuario: { [key: number]: number } = {};
-
-  // Roles disponibles (mock, idealmente vendría del backend)
-  rolesDisponibles: Rol[] = [
-    { id_rol: 1, nombre: 'admin', descripcion: 'Administrador con acceso total' },
-    { id_rol: 2, nombre: 'tecnico', descripcion: 'Técnico de servicio' },
-    { id_rol: 3, nombre: 'cliente', descripcion: 'Cliente de plataforma' },
-    { id_rol: 4, nombre: 'gestor_taller', descripcion: 'Gestor de taller' },
-  ];
+  rolOriginal: { [key: number]: number } = {}; // Trackea el rol original
 
   ngOnInit(): void {
     this.cargarUsuarios();
+    this.cargarRoles();
+  }
+
+  ngAfterViewInit(): void {
+    // Inicializar roles originales después de cargar usuarios
+    this.usuarios().forEach((u) => {
+      this.rolOriginal[u.id_usuario] = u.id_rol;
+    });
   }
 
   ngOnDestroy(): void {
@@ -224,12 +252,42 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: ListadoUsuariosResponse) => {
           this.usuarios.set(response.usuarios);
+          // Inicializar roles originales y selectRolUsuario con el rol actual
+          response.usuarios.forEach((u) => {
+            this.rolOriginal[u.id_usuario] = u.id_rol;
+            this.selectRolUsuario[u.id_usuario] = u.id_rol; // Inicializar con el rol actual
+          });
           this.cargando.set(false);
         },
         error: (err) => {
           console.error('Error cargando usuarios:', err);
           this.error.set(err.detalle || 'Error cargando usuarios');
           this.cargando.set(false);
+        },
+      });
+  }
+
+  /**
+   * Carga los roles disponibles desde el backend
+   */
+  private cargarRoles(): void {
+    this.rolService
+      .getRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (roles) => {
+          console.log('Roles cargados:', roles);
+          this.rolesDisponibles.set(roles);
+        },
+        error: (err) => {
+          console.error('Error cargando roles:', err);
+          // Usar valores por defecto si falla la carga
+          this.rolesDisponibles.set([
+            { id_rol: 1, nombre: 'admin', descripcion: 'Administrador' },
+            { id_rol: 2, nombre: 'tecnico', descripcion: 'Técnico' },
+            { id_rol: 3, nombre: 'cliente', descripcion: 'Cliente' },
+            { id_rol: 4, nombre: 'gestor_taller', descripcion: 'Gestor de Taller' },
+          ]);
         },
       });
   }
@@ -242,13 +300,13 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cambia el estado de un usuario (ACTIVO <-> BLOQUEADO)
+   * Cambia el estado de un usuario (ACTIVO <-> INACTIVO)
    */
   cambiarEstado(usuario: UsuarioListado): void {
-    const nuevoEstado = usuario.estado_cuenta === 'ACTIVO' ? 'BLOQUEADO' : 'ACTIVO';
+    const nuevoEstado = usuario.estado_cuenta === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
 
     const confirmacion = confirm(
-      `¿Estás seguro de que deseas ${nuevoEstado === 'ACTIVO' ? 'ACTIVAR' : 'BLOQUEAR'} a ${usuario.email}?`,
+      `¿Estás seguro de que deseas ${nuevoEstado === 'ACTIVO' ? 'ACTIVAR' : 'DESACTIVAR'} a ${usuario.email}?`,
     );
 
     if (!confirmacion) return;
@@ -270,39 +328,59 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
             this.usuarios.set(usuariosActualizados);
           }
           this.cambiadoEstado[usuario.id_usuario] = false;
-          alert(`✅ Usuario ${nuevoEstado === 'ACTIVO' ? 'activado' : 'bloqueado'} exitosamente`);
+          alert(`✅ Usuario ${nuevoEstado === 'ACTIVO' ? 'activado' : 'desactivado'} exitosamente`);
         },
         error: (err) => {
           console.error('Error cambiando estado:', err);
-          alert(`❌ Error: ${err.detalle || 'No se pudo cambiar el estado'}`);
+          let mensajeError = 'No se pudo cambiar el estado';
+          if (Array.isArray(err.detalle)) {
+            mensajeError = err.detalle.map((d: any) => d.msg || d).join(', ');
+          } else if (typeof err.detalle === 'string') {
+            mensajeError = err.detalle;
+          }
+          console.error('Mensaje de error detallado:', mensajeError);
+          alert(`❌ Error: ${mensajeError}`);
           this.cambiadoEstado[usuario.id_usuario] = false;
         },
       });
   }
 
   /**
-   * Cambia el rol de un usuario
+   * Guarda el cambio de rol
    */
-  cambiarRol(idUsuario: number, idRol: number): void {
-    if (!idRol) return;
+  guardarRol(idUsuario: number): void {
+    const nuevoIdRol = this.selectRolUsuario[idUsuario];
+    console.log('guardarRol - idUsuario:', idUsuario, 'nuevoIdRol:', nuevoIdRol);
 
-    const rol = this.rolesDisponibles.find((r) => r.id_rol === idRol);
+    if (!nuevoIdRol || nuevoIdRol === 0) {
+      console.log('Rol inválido o no seleccionado');
+      return;
+    }
+
     const usuario = this.usuarios().find((u) => u.id_usuario === idUsuario);
 
-    if (!usuario || !rol) return;
+    if (!usuario) {
+      console.log('Usuario no encontrado');
+      return;
+    }
+
+    // Obtener nombre del rol desde rolesDisponibles() o usar el ID como fallback
+    const rol = this.rolesDisponibles().find((r) => r.id_rol === nuevoIdRol);
+    const nombreRol = rol?.nombre || `Rol #${nuevoIdRol}`;
 
     const confirmacion = confirm(
-      `¿Estás seguro de que deseas asignar el rol "${rol.nombre}" a ${usuario.email}?`,
+      `¿Estás seguro de que deseas asignar el rol "${nombreRol}" a ${usuario.email}?`,
     );
 
     if (!confirmacion) {
-      this.selectRolUsuario[idUsuario] = 0;
+      this.selectRolUsuario[idUsuario] = this.rolOriginal[idUsuario];
       return;
     }
 
     this.cambiandoRol[idUsuario] = true;
+    const data: AsignarRolData = { id_rol: nuevoIdRol };
 
-    const data: AsignarRolData = { id_rol: idRol };
+    console.log('Enviando petición asignarRol:', { idUsuario, data });
 
     this.usuarioService
       .asignarRol(idUsuario, data)
@@ -313,19 +391,37 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
           const index = this.usuarios().findIndex((u) => u.id_usuario === idUsuario);
           if (index !== -1) {
             const usuariosActualizados = [...this.usuarios()];
-            usuariosActualizados[index].rol_nombre = rol.nombre;
+            usuariosActualizados[index].id_rol = nuevoIdRol;
+            usuariosActualizados[index].rol_nombre = nombreRol;
             this.usuarios.set(usuariosActualizados);
+            // Actualizar rol original
+            this.rolOriginal[idUsuario] = nuevoIdRol;
           }
           this.cambiandoRol[idUsuario] = false;
-          this.selectRolUsuario[idUsuario] = 0;
-          alert(`✅ Rol asignado exitosamente`);
+          alert(`✅ Rol asignado exitosamente a ${usuario.email}`);
         },
         error: (err) => {
           console.error('Error asignando rol:', err);
           alert(`❌ Error: ${err.detalle || 'No se pudo asignar el rol'}`);
           this.cambiandoRol[idUsuario] = false;
-          this.selectRolUsuario[idUsuario] = 0;
+          // Revertir al rol original
+          this.selectRolUsuario[idUsuario] = this.rolOriginal[idUsuario];
         },
       });
+  }
+
+  /**
+   * Cancela el cambio de rol
+   */
+  cancelarRol(idUsuario: number): void {
+    this.selectRolUsuario[idUsuario] = this.rolOriginal[idUsuario];
+  }
+
+  /**
+   * Obtiene el nombre del rol dado su ID
+   */
+  getRolNombre(idRol: number): string {
+    const rol = this.rolesDisponibles().find((r) => r.id_rol === idRol);
+    return rol?.nombre || `Rol #${idRol}`;
   }
 }

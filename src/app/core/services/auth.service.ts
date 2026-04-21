@@ -35,8 +35,12 @@ export class AuthService {
 
   register(data: UsuarioCreate): Observable<UsuarioResponse> {
     return this.http
-      .post<UsuarioResponse>(`${this.baseUrl}/register`, data)
-      .pipe(catchError((error: HttpErrorResponse) => this.handleError('Error en registro', error)));
+      .post<TokenResponse>(`${this.baseUrl}/register`, data)
+      .pipe(
+        tap((res) => this.setToken(res.access_token)),
+        switchMap(() => this.me()),
+        catchError((error: HttpErrorResponse) => this.handleError('Error en registro', error)),
+      );
   }
 
   me(): Observable<UsuarioResponse> {

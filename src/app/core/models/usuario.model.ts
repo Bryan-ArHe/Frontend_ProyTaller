@@ -6,13 +6,13 @@ export interface UsuarioPerfil {
   id_rol: number;
   email: string;
   telefono: string;
-  nombres?: string;
-  apellidos?: string;
+  nombre?: string;
+  apellido?: string;
   razon_social?: string; // Para empresas/talleres
   ci?: string; // Para clientes
   nit?: string; // Para talleres
   direccion?: string; // Para talleres
-  estado_cuenta: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
+  estado_cuenta: 'ACTIVO' | 'INACTIVO';
   rol?: Rol;
   created_at?: string;
   updated_at?: string;
@@ -21,8 +21,8 @@ export interface UsuarioPerfil {
 export interface ActualizarPerfilData {
   email?: string;
   telefono?: string;
-  nombres?: string;
-  apellidos?: string;
+  nombre?: string;
+  apellido?: string;
   razon_social?: string;
   direccion?: string;
 }
@@ -38,17 +38,17 @@ export interface UsuarioListado {
   id_usuario: number;
   email: string;
   telefono: string;
-  nombres?: string;
-  apellidos?: string;
+  nombre?: string;
+  apellido?: string;
   razon_social?: string;
-  estado_cuenta: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
+  estado_cuenta: 'ACTIVO' | 'INACTIVO';
   id_rol: number;
   rol_nombre?: string;
   created_at?: string;
 }
 
 export interface CambiarEstadoUsuarioData {
-  estado_cuenta: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
+  estado_cuenta: 'ACTIVO' | 'INACTIVO';
 }
 
 export interface AsignarRolData {

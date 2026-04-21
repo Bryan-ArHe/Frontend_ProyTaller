@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
+import { UsuarioPerfil } from '../../../../core/models/usuario.model';
 
 @Component({
   selector: 'app-perfil',
@@ -14,6 +15,14 @@ import { AuthService } from '../../../../core/services/auth.service';
         <div class="bg-white rounded-lg shadow-md p-8 space-y-6">
           <!-- Información básica -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Nombre</label>
+              <p class="text-lg text-gray-900">{{ user.nombre || 'No registrado' }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Apellido</label>
+              <p class="text-lg text-gray-900">{{ user.apellido || 'No registrado' }}</p>
+            </div>
             <div>
               <label class="block text-sm font-medium text-gray-600 mb-2">Email</label>
               <p class="text-lg text-gray-900">{{ user.email }}</p>

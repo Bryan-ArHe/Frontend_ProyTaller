@@ -15,8 +15,8 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class ComisionService {
-  private readonly baseUrlComision = `${environment.apiUrl}/api/comisiones`;
-  private readonly baseUrlCalificacion = `${environment.apiUrl}/api/calificaciones`;
+  private readonly baseUrlComision = `${environment.apiUrl}/comisiones`;
+  private readonly baseUrlCalificacion = `${environment.apiUrl}/calificaciones`;
 
   constructor(private readonly http: HttpClient) {}
 

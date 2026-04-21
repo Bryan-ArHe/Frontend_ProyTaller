@@ -7,7 +7,7 @@ import { MensajeInApp, MensajeInAppRequest, MensajeInAppResponse } from '../mode
   providedIn: 'root',
 })
 export class MensajeService {
-  private readonly baseUrl = 'http://localhost:8000/api/mensajes';
+  private readonly baseUrl = 'http://localhost:8000/mensajes';
 
   constructor(private readonly http: HttpClient) {}
 

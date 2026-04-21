@@ -279,42 +279,31 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
    * Recarga los permisos del rol seleccionado
    */
   recargarPermisos(): void {
-    const rolId = this.rolSeleccionado()?.id_rol;
-    if (!rolId) return;
+    const rolSeleccionado = this.rolSeleccionado();
+    if (!rolSeleccionado) return;
 
     this.cargandoPermisos.set(true);
     this.errorPermisos.set(null);
 
-    // Obtener todos los permisos del sistema y los del rol
+    // Obtener todos los permisos del sistema
     this.rolService
       .getPermisos()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (permisosGlobales) => {
-          this.rolService
-            .getRolConPermisos(rolId)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: (rolConPermisos) => {
-                const idsPermisosRol = rolConPermisos.permisos.map((p) => p.id_permiso);
-                this.permisosOriginales.set([...idsPermisosRol]);
+          // Los permisos del rol ya vienen en rolSeleccionado.permisos
+          const idsPermisosRol = (rolSeleccionado.permisos || []).map((p) => p.id_permiso);
+          this.permisosOriginales.set([...idsPermisosRol]);
 
-                // Construir array de permisos con estado
-                const permisosConEstado = permisosGlobales.map((p) => ({
-                  ...p,
-                  asignado: idsPermisosRol.includes(p.id_permiso),
-                }));
+          // Construir array de permisos con estado
+          const permisosConEstado = permisosGlobales.map((p) => ({
+            ...p,
+            asignado: idsPermisosRol.includes(p.id_permiso),
+          }));
 
-                this.permisosConEstado.set(permisosConEstado);
-                this.cargandoPermisos.set(false);
-                this.permisosModificados.clear();
-              },
-              error: (err) => {
-                console.error('Error cargando permisos del rol:', err);
-                this.errorPermisos.set(err.detalle || 'Error cargando permisos');
-                this.cargandoPermisos.set(false);
-              },
-            });
+          this.permisosConEstado.set(permisosConEstado);
+          this.cargandoPermisos.set(false);
+          this.permisosModificados.clear();
         },
         error: (err) => {
           console.error('Error cargando permisos globales:', err);
@@ -384,7 +373,7 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
       .map((p) => p.id_permiso);
 
     this.rolService
-      .actualizarPermisosDeRol(rolId, { permisos: permisosSeleccionados })
+      .actualizarPermisosDeRol(rolId, { permisos_ids: permisosSeleccionados })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (rolActualizado) => {

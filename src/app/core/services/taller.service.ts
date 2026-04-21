@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class TallerService {
-  private readonly baseUrl = `${environment.apiUrl}/api/talleres`;
+  private readonly baseUrl = `${environment.apiUrl}/talleres`;
 
   constructor(private readonly http: HttpClient) {}
 
