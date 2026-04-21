@@ -1,14 +1,15 @@
 // ==================== ROL Y PERMISO ====================
-export interface Rol {
-  id_rol: number;
-  nombre: string;
-  descripcion: string;
-}
-
 export interface Permiso {
   id_permiso: number;
   nombre: string;
   descripcion: string;
+}
+
+export interface Rol {
+  id_rol: number;
+  nombre: string;
+  descripcion: string;
+  permisos?: Permiso[];
 }
 
 // ==================== USUARIO BASE ====================
@@ -17,7 +18,9 @@ export interface Usuario {
   id_rol: number;
   email: string;
   telefono: string;
-  estado_cuenta: 'ACTIVO' | 'INACTIVO' | 'BLOQUEADO';
+  nombre?: string;
+  apellido?: string;
+  estado_cuenta: 'ACTIVO' | 'INACTIVO';
   rol?: Rol;
 }
 
@@ -26,6 +29,8 @@ export interface UsuarioCreate {
   telefono: string;
   password: string;
   id_rol: number;
+  nombre?: string;
+  apellido?: string;
 }
 
 export interface UsuarioUpdate {

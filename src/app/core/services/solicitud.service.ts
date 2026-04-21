@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class SolicitudService {
-  private readonly baseUrl = `${environment.apiUrl}/api/solicitudes`;
+  private readonly baseUrl = `${environment.apiUrl}/solicitudes`;
 
   constructor(private readonly http: HttpClient) {}
 

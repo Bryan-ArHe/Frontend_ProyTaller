@@ -5,12 +5,8 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Rol, Permiso } from '../models/auth.model';
 
-interface RolConPermisos extends Rol {
-  permisos: Permiso[];
-}
-
 interface ActualizarPermisosRolData {
-  permisos: number[]; // array de id_permiso
+  permisos_ids: number[]; // array de id_permiso
 }
 
 /**
@@ -36,25 +32,11 @@ export class RolService {
   }
 
   /**
-   * Obtiene un rol específico con sus permisos asignados
-   * @param idRol - ID del rol
-   */
-  getRolConPermisos(idRol: number): Observable<RolConPermisos> {
-    return this.http
-      .get<RolConPermisos>(`${this.baseUrl}/${idRol}/permisos`)
-      .pipe(
-        catchError((error: HttpErrorResponse) =>
-          this.handleError('Error obteniendo rol con permisos', error),
-        ),
-      );
-  }
-
-  /**
    * Obtiene todos los permisos disponibles en el sistema
    */
   getPermisos(): Observable<Permiso[]> {
     return this.http
-      .get<Permiso[]>(`${this.baseUrl}/permisos/all`)
+      .get<Permiso[]>(`${this.baseUrl}/permisos`)
       .pipe(
         catchError((error: HttpErrorResponse) =>
           this.handleError('Error obteniendo permisos', error),
@@ -67,12 +49,9 @@ export class RolService {
    * @param idRol - ID del rol
    * @param data - Array de IDs de permisos a asignar
    */
-  actualizarPermisosDeRol(
-    idRol: number,
-    data: ActualizarPermisosRolData,
-  ): Observable<RolConPermisos> {
+  actualizarPermisosDeRol(idRol: number, data: ActualizarPermisosRolData): Observable<Rol> {
     return this.http
-      .patch<RolConPermisos>(`${this.baseUrl}/${idRol}/permisos`, data)
+      .put<Rol>(`${this.baseUrl}/${idRol}/permisos`, data)
       .pipe(
         catchError((error: HttpErrorResponse) =>
           this.handleError('Error actualizando permisos del rol', error),

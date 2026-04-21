@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class NotificacionService {
-  private readonly baseUrl = `${environment.apiUrl}/api/notificaciones`;
+  private readonly baseUrl = `${environment.apiUrl}/notificaciones`;
 
   constructor(private readonly http: HttpClient) {}
 

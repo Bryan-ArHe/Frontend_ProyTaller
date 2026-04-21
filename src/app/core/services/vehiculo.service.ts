@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class VehiculoService {
-  private readonly baseUrl = `${environment.apiUrl}/api/vehiculos`;
+  private readonly baseUrl = `${environment.apiUrl}/vehiculos`;
 
   constructor(private readonly http: HttpClient) {}
 

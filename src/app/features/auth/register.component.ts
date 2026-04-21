@@ -35,6 +35,24 @@ import { UsuarioCreate } from '../../core/models/auth.model';
           </div>
 
           <div>
+            <label class="block text-sm font-medium mb-1">Nombre</label>
+            <input
+              type="text"
+              formControlName="nombre"
+              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Apellido</label>
+            <input
+              type="text"
+              formControlName="apellido"
+              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+            />
+          </div>
+
+          <div>
             <label class="block text-sm font-medium mb-1">Password</label>
             <input
               type="password"
@@ -82,6 +100,8 @@ export class RegisterComponent {
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     telefono: ['', [Validators.required, Validators.minLength(7)]],
+    nombre: ['', [Validators.required, Validators.minLength(2)]],
+    apellido: ['', [Validators.required, Validators.minLength(2)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     id_rol: [1, [Validators.required, Validators.min(1)]],
   });
@@ -101,7 +121,7 @@ export class RegisterComponent {
       .register(payload)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: () => void this.router.navigate(['/login']),
+        next: () => void this.router.navigate(['/dashboard']),
         error: (err: HttpErrorResponse) => {
           this.errorMessage = err.error?.detail ?? 'No se pudo registrar el usuario.';
         },

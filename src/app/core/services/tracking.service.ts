@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class TrackingService {
-  private readonly baseUrl = `${environment.apiUrl}/api/tracking`;
+  private readonly baseUrl = `${environment.apiUrl}/tracking`;
 
   constructor(private readonly http: HttpClient) {}
 

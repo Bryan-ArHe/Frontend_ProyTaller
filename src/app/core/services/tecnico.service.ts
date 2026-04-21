@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class TecnicoService {
-  private readonly baseUrl = `${environment.apiUrl}/api/tecnicos`;
+  private readonly baseUrl = `${environment.apiUrl}/tecnicos`;
 
   constructor(private readonly http: HttpClient) {}
 
