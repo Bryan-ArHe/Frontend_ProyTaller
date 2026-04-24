@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Marca, Modelo, VehiculoRequest, VehiculoResponse } from '../models/vehiculo.model';
+import { VehiculoRequest, VehiculoResponse } from '../models/vehiculo.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -36,29 +36,7 @@ export class VehiculoService {
         catchError((error: HttpErrorResponse) => this.handleError('Error creando vehículo', error)),
       );
   }
-
-  /**
-   * Obtiene todas las marcas disponibles
-   */
-  getMarcas(): Observable<Marca[]> {
-    return this.http
-      .get<Marca[]>(`${this.baseUrl}/marcas`)
-      .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError('Error cargando marcas', error)),
-      );
-  }
-
-  /**
-   * Obtiene los modelos de una marca específica
-   */
-  getModelosByMarca(idMarca: number): Observable<Modelo[]> {
-    return this.http
-      .get<Modelo[]>(`${this.baseUrl}/marcas/${idMarca}/modelos`)
-      .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError('Error cargando modelos', error)),
-      );
-  }
-
+  
   /**
    * Obtiene un vehículo por ID
    */
