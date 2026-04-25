@@ -105,6 +105,13 @@ export const dashboardRoutes: Routes = [
         loadComponent: () =>
           import('./views/comisiones/comisiones.component').then((m) => m.ComisionesComponent),
       },
+      // Auditoría y Logs
+      {
+        path: 'bitacora',
+        loadComponent: () =>
+          import('./views/bitacora/bitacora.component').then((m) => m.BitacoraComponent),
+        canActivate: [AdminGuard],
+      },
     ],
   },
 ];
