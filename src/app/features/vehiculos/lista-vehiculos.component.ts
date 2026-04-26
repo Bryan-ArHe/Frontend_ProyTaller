@@ -37,6 +37,9 @@ import { VehiculoResponse } from '../../core/models/vehiculo.model';
         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
           <p class="text-red-700 font-semibold">❌ Error</p>
           <p class="text-red-600 mt-1">{{ error }}</p>
+          <p class="text-red-500 text-sm mt-2">
+            💡 Abre la consola (F12) para más detalles técnicos
+          </p>
         </div>
       }
 
@@ -63,11 +66,11 @@ import { VehiculoResponse } from '../../core/models/vehiculo.model';
                 <div class="space-y-3 mb-6">
                   <div class="flex items-center justify-between">
                     <span class="text-gray-600">Marca</span>
-                    <span class="font-semibold text-gray-900">{{ vehiculo.marca_nombre }}</span>
+                    <span class="font-semibold text-gray-900">{{ vehiculo.marca }}</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-gray-600">Modelo</span>
-                    <span class="font-semibold text-gray-900">{{ vehiculo.modelo_nombre }}</span>
+                    <span class="font-semibold text-gray-900">{{ vehiculo.modelo }}</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-gray-600">Año</span>
@@ -141,14 +144,51 @@ export class ListaVehiculosComponent implements OnInit {
     this.cargando = true;
     this.error = null;
 
+    console.log('🚗 Iniciando carga de vehículos...');
     this.vehiculoService.getMisVehiculos().subscribe({
       next: (datos) => {
+        console.log(
+          '%c✅ VEHÍCULOS CARGADOS EXITOSAMENTE',
+          'color: green; font-size: 14px; font-weight: bold;',
+        );
+        console.log('Datos recibidos:', datos);
+
+        if (!datos) {
+          console.warn('⚠️ Los datos son null o undefined');
+        } else if (Array.isArray(datos)) {
+          console.log(`📊 Cantidad de vehículos: ${datos.length}`);
+          if (datos.length === 0) {
+            console.warn('⚠️ No hay vehículos registrados (array vacío)');
+          } else {
+            console.log('🚗 Primer vehículo:', datos[0]);
+            datos.forEach((v, i) => {
+              console.log(`  [${i}] Placa: ${v.placa}, ID: ${v.id}`);
+            });
+          }
+        } else {
+          console.error('❌ Los datos NO son un array:', typeof datos, datos);
+        }
+
         this.vehiculos = datos;
         this.cargando = false;
       },
       error: (err) => {
-        console.error('Error cargando vehículos:', err);
-        this.error = 'No se pudieron cargar los vehículos. Intenta de nuevo.';
+        console.error('❌ Error cargando vehículos:', err);
+        console.error('Status:', err?.status);
+        console.error('Mensaje:', err?.mensaje);
+        console.error('Detalle:', err?.detalle);
+
+        // Mensaje de error más detallado
+        if (err?.status === 401) {
+          this.error = 'Sesión expirada. Por favor inicia sesión de nuevo.';
+        } else if (err?.status === 403) {
+          this.error = 'No tienes permisos para ver tus vehículos.';
+        } else if (err?.status === 0) {
+          this.error =
+            'No se puede conectar al servidor. Verifica que el backend está activo en http://localhost:8000';
+        } else {
+          this.error = `Error: ${err?.mensaje || 'No se pudieron cargar los vehículos. Intenta de nuevo.'}`;
+        }
         this.cargando = false;
       },
     });

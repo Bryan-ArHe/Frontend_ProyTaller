@@ -12,6 +12,7 @@ import {
   ListadoUsuariosResponse,
   UsuarioResponse,
 } from '../models/usuario.model';
+import { UsuarioCreate, UsuarioUpdate } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -87,6 +88,34 @@ export class UsuarioService {
       })),
       catchError((error: HttpErrorResponse) => this.handleError('Error cargando usuarios', error)),
     );
+  }
+
+  /**
+   * Crea un nuevo usuario (solo admin)
+   * POST /usuarios/
+   */
+  crearUsuario(data: UsuarioCreate): Observable<UsuarioPerfil> {
+    return this.http
+      .post<UsuarioPerfil>(`${this.baseUrl}/`, data)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          this.handleError('Error creando usuario', error),
+        ),
+      );
+  }
+
+  /**
+   * Actualiza un usuario existente (solo admin)
+   * PUT /usuarios/{id}
+   */
+  actualizarUsuario(idUsuario: number, data: UsuarioUpdate): Observable<UsuarioPerfil> {
+    return this.http
+      .put<UsuarioPerfil>(`${this.baseUrl}/${idUsuario}`, data)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          this.handleError('Error actualizando usuario', error),
+        ),
+      );
   }
 
   /**

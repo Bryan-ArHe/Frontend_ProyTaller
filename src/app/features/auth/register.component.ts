@@ -61,15 +61,6 @@ import { UsuarioCreate } from '../../core/models/auth.model';
             />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-1">ID Rol</label>
-            <input
-              type="number"
-              formControlName="id_rol"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
-            />
-          </div>
-
           <p class="text-red-600 text-sm" *ngIf="errorMessage">{{ errorMessage }}</p>
 
           <button
@@ -103,7 +94,7 @@ export class RegisterComponent {
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     apellido: ['', [Validators.required, Validators.minLength(2)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    id_rol: [1, [Validators.required, Validators.min(1)]],
+    id_rol: [3, [Validators.required, Validators.minLength(1)]],
   });
 
   onSubmit(): void {

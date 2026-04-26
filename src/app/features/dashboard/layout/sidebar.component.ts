@@ -107,6 +107,16 @@ const MENU_ITEMS: MenuItem[] = [
       { label: 'Panel de Comisiones', path: 'comisiones', roles: ['admin'] },
     ],
   },
+
+  // Paquete 7: Auditoría y Logs
+  {
+    id: 'auditoria',
+    label: 'Auditoría y Logs',
+    icon: '📋',
+    subItems: [
+      { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['admin'] },
+    ],
+  },
 ];
 
 // ==================== COMPONENTE ====================
