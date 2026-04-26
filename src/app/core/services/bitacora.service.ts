@@ -49,22 +49,5 @@ export class BitacoraService {
     let params = new HttpParams().set('fecha_inicio', fechaInicio).set('fecha_fin', fechaFin);
     return this.http.get<Bitacora[]>(this.apiUrl, { params });
   }
-
-  /**
-   * Registra una acción en la bitácora
-   * Este método es llamado automáticamente por el interceptor HTTP
-   * @param accionData - Datos de la acción a registrar
-   */
-  registrarAccion(accionData: {
-    evento: string;
-    recurso: string;
-    accion: string;
-    ip: string;
-    endpoint: string;
-    payload?: string;
-    dispositivo?: string;
-    codigo_estado?: number;
-  }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/registrar`, accionData);
-  }
 }
+

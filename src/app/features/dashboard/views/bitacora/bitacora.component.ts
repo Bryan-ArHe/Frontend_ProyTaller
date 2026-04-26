@@ -86,7 +86,7 @@ type BitacoraLog = Bitacora;
               </tr>
             </thead>
             <tbody>
-              @for (log of logsActuales; track log.id_bitacora) {
+              @for (log of logsPaginados; track log.id_bitacora) {
                 <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                   <td class="px-6 py-4 text-sm text-gray-700">
                     {{ formatearFecha(log.fecha) }}
@@ -110,12 +110,65 @@ type BitacoraLog = Bitacora;
               }
             </tbody>
           </table>
+
+          <!-- Controles de Paginación -->
+          <div
+            class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between"
+          >
+            <div class="text-sm text-gray-600">
+              <p>
+                Mostrando
+                <span class="font-semibold">{{ (paginaActual - 1) * itemsPorPagina + 1 }}</span>
+                a
+                <span class="font-semibold">{{
+                  Math.min(paginaActual * itemsPorPagina, logsActuales.length)
+                }}</span>
+                de
+                <span class="font-semibold">{{ logsActuales.length }}</span>
+                registros
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                (click)="paginaAnterior()"
+                [disabled]="paginaActual === 1"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Anterior
+              </button>
+
+              <div class="flex items-center gap-1">
+                @for (pagina of obtenerNumeroPaginas(); track pagina) {
+                  <button
+                    (click)="irAPagina(pagina)"
+                    [class.bg-blue-600]="paginaActual === pagina"
+                    [class.text-white]="paginaActual === pagina"
+                    [class.bg-gray-200]="paginaActual !== pagina"
+                    [class.text-gray-700]="paginaActual !== pagina"
+                    class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-500 hover:text-white transition-colors"
+                  >
+                    {{ pagina }}
+                  </button>
+                }
+              </div>
+
+              <button
+                (click)="paginaSiguiente()"
+                [disabled]="paginaActual === totalPaginas"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Siguiente →
+              </button>
+            </div>
+          </div>
         }
       </div>
 
       <!-- Información -->
       <div class="mt-6 text-center text-sm text-gray-500">
-        <p>Total de registros: {{ logs.length }}</p>
+        <p>
+          Total de registros: {{ logs.length }} | Registros con filtros: {{ logsActuales.length }}
+        </p>
       </div>
     </div>
   `,
@@ -127,10 +180,16 @@ export class BitacoraComponent implements OnInit {
 
   logs: BitacoraLog[] = [];
   logsActuales: BitacoraLog[] = [];
+  logsPaginados: BitacoraLog[] = [];
   loading = false;
   filtroEvento = '';
   filtroUsuario = '';
   filtroRecurso = '';
+
+  // Propiedades de paginación
+  itemsPorPagina = 10;
+  paginaActual = 1;
+  totalPaginas = 1;
 
   ngOnInit() {
     this.cargarBitacora();
@@ -142,6 +201,8 @@ export class BitacoraComponent implements OnInit {
       next: (data) => {
         this.logs = data || [];
         this.logsActuales = [...this.logs];
+        this.paginaActual = 1;
+        this.actualizarPaginacion();
         this.loading = false;
       },
       error: (error) => {
@@ -149,6 +210,7 @@ export class BitacoraComponent implements OnInit {
         this.loading = false;
         this.logs = [];
         this.logsActuales = [];
+        this.logsPaginados = [];
       },
     });
   }
@@ -165,6 +227,8 @@ export class BitacoraComponent implements OnInit {
 
       return coincideEvento && coincideUsuario && coincideRecurso;
     });
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
   }
 
   formatearFecha(fecha: string): string {
@@ -174,6 +238,57 @@ export class BitacoraComponent implements OnInit {
       return fecha;
     }
   }
+
+  actualizarPaginacion() {
+    this.totalPaginas = Math.ceil(this.logsActuales.length / this.itemsPorPagina);
+    if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+      this.paginaActual = this.totalPaginas;
+    }
+    this.obtenerLogsPaginados();
+  }
+
+  obtenerLogsPaginados() {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    const fin = inicio + this.itemsPorPagina;
+    this.logsPaginados = this.logsActuales.slice(inicio, fin);
+  }
+
+  irAPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= this.totalPaginas) {
+      this.paginaActual = pagina;
+      this.obtenerLogsPaginados();
+    }
+  }
+
+  paginaAnterior() {
+    if (this.paginaActual > 1) {
+      this.irAPagina(this.paginaActual - 1);
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.paginaActual < this.totalPaginas) {
+      this.irAPagina(this.paginaActual + 1);
+    }
+  }
+
+  obtenerNumeroPaginas(): number[] {
+    const paginas: number[] = [];
+    const maxBotones = 5;
+    let inicio = Math.max(1, this.paginaActual - Math.floor(maxBotones / 2));
+    let fin = Math.min(this.totalPaginas, inicio + maxBotones - 1);
+
+    if (fin - inicio + 1 < maxBotones) {
+      inicio = Math.max(1, fin - maxBotones + 1);
+    }
+
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  }
+
+  protected Math = Math;
 
   getBadgeClass(evento: string): string {
     const clases: { [key: string]: string } = {
