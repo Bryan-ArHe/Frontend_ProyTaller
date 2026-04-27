@@ -69,10 +69,9 @@ export class PerfilComponent {
   getRoleName(idRol: number): string {
     const roles: { [key: number]: string } = {
       1: 'Administrador',
-      2: 'Operador',
-      3: 'Técnico',
-      4: 'Usuario',
-      5: 'Gestor de Taller',
+      2: 'Técnico',
+      3: 'Usuario',
+      4: 'Gestor de Taller',
     };
     return roles[idRol] || 'Desconocido';
   }

@@ -1,0 +1,62 @@
+/* ==================== LAYOUT PRINCIPAL ==================== */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 100vh;
+  background-color: #f3f4f6;
+  overflow: hidden;
+}
+
+/* En desktop (>= 768px): Mostrar grid con sidebar */
+@media (min-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 16rem 1fr;
+  }
+}
+
+/* En móviles (< 768px): Grid solo con contenido, sidebar es position fixed */
+@media (max-width: 767px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== SIDEBAR ==================== */
+/* El sidebar tiene width dinámico (0 o 16rem) controlado por el componente */
+
+/* ==================== MAIN WRAPPER ==================== */
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: margin-left 0.3s ease;
+  margin-left: 0;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+  padding-top: 5rem; /* Space for header */
+}
+
+/* ==================== SCROLL CUSTOMIZACIÓN ==================== */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

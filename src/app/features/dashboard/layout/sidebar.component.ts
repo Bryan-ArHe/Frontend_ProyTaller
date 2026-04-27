@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LayoutService } from '../../../core/services/layout.service';
 
 // ==================== INTERFACES ====================
 interface SubItem {
@@ -125,32 +126,34 @@ const MENU_ITEMS: MenuItem[] = [
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
-    <div
-      class="w-64 bg-gradient-to-b from-blue-900 to-blue-800 h-screen fixed left-0 top-0 text-white shadow-lg overflow-y-auto"
+    <aside
+      class="sidebar"
+      [class.sidebar-open]="layoutService.isSidebarOpen()"
     >
       <!-- Logo -->
-      <div class="p-6 border-b border-blue-700">
-        <h1 class="text-2xl font-bold">🚗 EmergAuto</h1>
-        <p class="text-blue-200 text-xs mt-1">Plataforma de Emergencias</p>
+      <div class="sidebar-logo">
+        <h1 class="logo-title">🚗 EmergAuto</h1>
+        <p class="logo-subtitle">Plataforma de Emergencias</p>
       </div>
 
       <!-- Navegación -->
-      <nav class="mt-8 px-4 pb-32 space-y-1">
+      <nav class="sidebar-nav">
         @for (paquete of visiblePaquetes; track paquete.id) {
-          <div class="mb-4">
+          <div class="nav-section">
             <!-- Botón del paquete (acordeón) -->
             <button
+              class="nav-section-btn"
+              [class.active]="expandedPaquete === paquete.id"
               (click)="togglePaquete(paquete.id)"
-              class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              [class.bg-blue-600]="expandedPaquete === paquete.id"
+              type="button"
             >
-              <div class="flex items-center gap-3">
-                <span class="text-xl">{{ paquete.icon }}</span>
-                <span class="font-semibold text-sm">{{ paquete.label }}</span>
+              <div class="nav-section-left">
+                <span class="nav-icon">{{ paquete.icon }}</span>
+                <span class="nav-label">{{ paquete.label }}</span>
               </div>
               <svg
-                class="w-4 h-4 transition-transform duration-300"
-                [class.rotate-180]="expandedPaquete === paquete.id"
+                class="nav-chevron"
+                [class.rotated]="expandedPaquete === paquete.id"
                 stroke="currentColor"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -166,15 +169,16 @@ const MENU_ITEMS: MenuItem[] = [
 
             <!-- Sub-items (con animación) -->
             @if (expandedPaquete === paquete.id) {
-              <div class="mt-2 ml-4 space-y-1 border-l-2 border-blue-500 pl-4">
+              <div class="nav-submenu">
                 @for (subItem of paquete.subItems; track subItem.path) {
                   <a
+                    class="nav-subitem"
                     [routerLink]="subItem.path"
-                    routerLinkActive="bg-yellow-500 bg-opacity-20 border-l-2 border-yellow-400"
-                    class="flex items-center gap-2 px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors duration-200"
+                    routerLinkActive="active"
+                    (click)="onNavigation()"
                   >
-                    <span class="w-2 h-2 bg-blue-300 rounded-full"></span>
-                    <span>{{ subItem.label }}</span>
+                    <span class="nav-dot"></span>
+                    <span class="nav-subitem-label">{{ subItem.label }}</span>
                   </a>
                 }
               </div>
@@ -184,18 +188,20 @@ const MENU_ITEMS: MenuItem[] = [
       </nav>
 
       <!-- Información del usuario (al fondo) -->
-      <div class="fixed bottom-0 left-0 w-64 p-4 border-t border-blue-700 bg-blue-900">
-        <div class="text-sm">
-          <p class="text-blue-200">Conectado como:</p>
-          <p class="font-semibold truncate">{{ userEmail }}</p>
-          <p class="text-xs text-blue-300 mt-1">Rol: {{ userRole }}</p>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <p class="user-label">Conectado como:</p>
+          <p class="user-email">{{ userEmail }}</p>
+          <p class="user-role">Rol: {{ userRole }}</p>
         </div>
       </div>
-    </div>
+    </aside>
   `,
+  styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent {
   private readonly authService = inject(AuthService);
+  readonly layoutService = inject(LayoutService);
 
   userEmail = '';
   userRole = '';
@@ -240,6 +246,17 @@ export class SidebarComponent {
   }
 
   /**
+   * Callback cuando se hace clic en un enlace de navegación
+   * Cierra el sidebar en móviles
+   */
+  onNavigation(): void {
+    // Cerrar sidebar solo en móviles (ancho < 768px)
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      this.layoutService.closeSidebar();
+    }
+  }
+
+  /**
    * Mapear id_rol a nombre descriptivo
    */
   private getRoleName(id_rol: number): string {
@@ -252,3 +269,4 @@ export class SidebarComponent {
     return roleMap[id_rol] || 'cliente';
   }
 }
+
