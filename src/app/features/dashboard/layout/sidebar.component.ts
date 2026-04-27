@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from '../../../core/services/layout.service';
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+
+
 
 // ==================== INTERFACES ====================
 interface SubItem {
@@ -202,18 +207,21 @@ const MENU_ITEMS: MenuItem[] = [
 export class SidebarComponent {
   private readonly authService = inject(AuthService);
   readonly layoutService = inject(LayoutService);
+  private readonly destroyRef = inject(DestroyRef); // <--- Inyectar DestroyRef
 
   userEmail = '';
   userRole = '';
-  expandedPaquete = 'identidad'; // Paquete expandido por defecto
+  expandedPaquete = 'identidad';
 
   constructor() {
-    this.authService.user$.subscribe((user) => {
-      if (user) {
-        this.userEmail = user.email;
-        this.userRole = this.getRoleName(user.id_rol);
-      }
-    });
+    this.authService.user$
+      .pipe(takeUntilDestroyed(this.destroyRef)) // <--- MAGIA: Se desuscribe automáticamente
+      .subscribe((user) => {
+        if (user) {
+          this.userEmail = user.email;
+          this.userRole = this.getRoleName(user.id_rol);
+        }
+      });
   }
 
   /**
