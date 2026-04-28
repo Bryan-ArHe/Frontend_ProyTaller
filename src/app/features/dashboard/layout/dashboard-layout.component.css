@@ -1,7 +1,6 @@
 /* ==================== LAYOUT PRINCIPAL ==================== */
 .dashboard-container {
   display: grid;
-  grid-template-columns: auto 1fr;
   height: 100vh;
   background-color: #f3f4f6;
   overflow: hidden;
@@ -9,8 +8,8 @@
 
 /* En desktop (>= 768px): Mostrar grid con sidebar */
 @media (min-width: 768px) {
-  .dashboard-container {
-    grid-template-columns: 16rem 1fr;
+  .main-wrapper {
+    margin-left: 16rem;
   }
 }
 
@@ -24,14 +23,33 @@
 /* ==================== SIDEBAR ==================== */
 /* El sidebar tiene width dinámico (0 o 16rem) controlado por el componente */
 
+/* ==================== SIDEBAR OVERLAY ==================== */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 30;
+  transition: opacity 0.3s ease;
+}
+
+/* Mostrar overlay solo en móviles (< 768px) */
+@media (min-width: 768px) {
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
 /* ==================== MAIN WRAPPER ==================== */
 .main-wrapper {
   display: flex;
   flex-direction: column;
+  flex: 1;
   height: 100vh;
   overflow: hidden;
   transition: margin-left 0.3s ease;
-  margin-left: 0;
 }
 
 /* ==================== MAIN CONTENT ==================== */

@@ -1,33 +1,39 @@
-import { Usuario } from './auth.model';
-
-export interface GestorTaller extends Usuario {
-  id_taller: number;
-  razon_social: string;
-  nit: string;
+// 1. INTERFAZ PRINCIPAL (Lo que recibimos del backend: GET /talleres)
+export interface Taller {
+  id: number;
+  nombre: string;
   direccion: string;
+  telefono?: string; // El "?" significa que es opcional (puede ser undefined/null)
+  latitud?: number;
+  longitud?: number;
+  especialidad?: string;
+  capacidad_vehiculos: number;
+  estado_activo: boolean;
+  id_propietario: number;
+  created_at: string; // Las fechas ISO de FastAPI llegan como string a Angular
 }
 
-export interface GestorTallerCreate {
-  email: string;
-  telefono: string;
-  password: string;
-  razon_social: string;
-  nit: string;
+// 2. INTERFAZ DE CREACIÓN (Lo que enviamos al backend: POST /talleres)
+export interface TallerCreate {
+  nombre: string;
   direccion: string;
-  id_rol: number;
-}
-
-export interface GestorTallerUpdate {
-  razon_social?: string;
-  direccion?: string;
-  email?: string;
   telefono?: string;
+  latitud?: number;
+  longitud?: number;
+  especialidad?: string;
+  capacidad_vehiculos?: number; // FastAPI tiene valor por defecto 1, por lo que es opcional enviarlo
+  estado_activo?: boolean;      // FastAPI tiene valor por defecto true
+  id_propietario: number;
 }
 
-export interface GestorTallerResponse extends GestorTaller {
-  created_at?: string;
-  updated_at?: string;
+// 3. INTERFAZ DE ACTUALIZACIÓN (Lo que enviamos al backend: PUT /talleres/{id})
+export interface TallerUpdate {
+  nombre?: string;
+  direccion?: string;
+  telefono?: string;
+  latitud?: number;
+  longitud?: number;
+  especialidad?: string;
+  capacidad_vehiculos?: number;
+  estado_activo?: boolean;
 }
-
-// Alias para compatibilidad
-export type TallerResponse = GestorTallerResponse;

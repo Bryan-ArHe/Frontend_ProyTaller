@@ -1,0 +1,51 @@
+<div class="talleres-container">
+  <div class="header-actions">
+    <h2>Gestión de Talleres</h2>
+    <button class="btn-primary" (click)="abrirModalCrear()">
+      + Registrar Nuevo Taller
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="alert-info">
+    Cargando la lista de talleres desde el servidor...
+  </div>
+  
+  <div *ngIf="errorMessage" class="alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div class="table-responsive" *ngIf="!isLoading && !errorMessage">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre y Ubicación</th>
+          <th>Especialidad</th>
+          <th>Capacidad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let taller of talleres">
+          <td>{{ taller.id }}</td>
+          <td>
+            <strong>{{ taller.nombre }}</strong><br>
+            <small>{{ taller.direccion }}</small>
+          </td>
+          <td>
+            <span class="badge">{{ taller.especialidad || 'General' }}</span>
+          </td>
+          <td>{{ taller.capacidad_vehiculos }} veh.</td>
+          <td class="actions-cell">
+            <button class="btn-edit" (click)="editarTaller(taller)">Editar</button>
+            <button class="btn-delete" (click)="desactivarTaller(taller.id, taller.nombre)">Dar de Baja</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="talleres.length === 0" class="empty-state">
+      No hay talleres activos registrados en el sistema.
+    </div>
+  </div>
+</div>

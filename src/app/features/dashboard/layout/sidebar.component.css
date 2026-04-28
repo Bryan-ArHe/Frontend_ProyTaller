@@ -14,14 +14,13 @@
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-
-  /* En móviles, ocultar por defecto */
-  margin-left: -16rem;
+  margin-left: -16rem; /* Oculto por defecto en móvil */
 }
 
 /* Cuando el sidebar está abierto (aplica en todas las resoluciones) */
 .sidebar.sidebar-open {
   margin-left: 0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ==================== LOGO SECTION ==================== */
@@ -52,6 +51,24 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: auto;
+}
+
+/* Cuando el sidebar está oculto en móvil, la nav desaparece */
+@media (max-width: 767px) {
+  .sidebar .sidebar-nav {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease 0.1s;
+  }
+
+  .sidebar.sidebar-open .sidebar-nav {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease 0.1s;
+  }
 }
 
 /* ==================== SECCIÓN DE NAVEGACIÓN ==================== */
@@ -237,7 +254,11 @@
 /* En tablets y desktop (768px+) - SIDEBAR SIEMPRE VISIBLE */
 @media (min-width: 768px) {
   .sidebar {
-    margin-left: 0 !important; /* Siempre visible */
+    margin-left: 0 !important; /* Siempre visible en desktop */
+  }
+
+  .sidebar.sidebar-open {
+    margin-left: 0;
   }
 }
 
@@ -260,25 +281,13 @@
 @media (max-width: 767px) {
   .sidebar {
     width: 16rem;
-    margin-left: -16rem !important; /* Oculto */
+    margin-left: -16rem !important; /* Oculto por defecto */
     transition: margin-left 0.3s ease;
   }
 
   .sidebar.sidebar-open {
-    margin-left: 0; /* Abierto */
+    margin-left: 0; /* Visible cuando está abierto */
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Fondo oscuro detrás del sidebar en móviles */
-  .sidebar.sidebar-open::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: -1;
   }
 }
 

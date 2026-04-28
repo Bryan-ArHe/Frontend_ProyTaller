@@ -1,72 +1,67 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Tecnico, TecnicoCreate, TecnicoUpdate, TecnicoResponse } from '../models/tecnico.model';
 import { environment } from '../../../environments/environment';
+import { Tecnico, TecnicoCreate, TecnicoUpdate } from '../models/tecnico.model';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TecnicoService {
-  private readonly baseUrl = `${environment.apiUrl}/tecnicos`;
+  private apiUrl = `${environment.apiUrl}/tecnicos`;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  // --- LECTURAS ESTRATÉGICAS ---
 
   /**
-   * Obtiene todos los técnicos
+   * Obtiene SOLO los técnicos listos para atender emergencias.
    */
-  getTechnicos(): Observable<TecnicoResponse[]> {
-    return this.http.get<TecnicoResponse[]>(`${this.baseUrl}`);
+  getTecnicosLibres(): Observable<Tecnico[]> {
+    return this.http.get<Tecnico[]>(`${this.apiUrl}/libres`);
   }
 
   /**
-   * Obtiene técnicos de un taller específico
+   * Obtiene los técnicos que pertenecen a un taller en específico.
    */
-  getTecnicosByTaller(idTaller: number): Observable<TecnicoResponse[]> {
-    return this.http.get<TecnicoResponse[]>(`${this.baseUrl}?taller=${idTaller}`);
+  getTecnicosPorTaller(idTaller: number): Observable<Tecnico[]> {
+    return this.http.get<Tecnico[]>(`${this.apiUrl}/taller/${idTaller}`);
+  }
+
+  // --- LECTURAS GENERALES Y CRUD ---
+
+  /**
+   * Obtiene la lista completa de técnicos activos.
+   */
+  getTecnicos(skip: number = 0, limit: number = 100): Observable<Tecnico[]> {
+    return this.http.get<Tecnico[]>(`${this.apiUrl}/?skip=${skip}&limit=${limit}`);
   }
 
   /**
-   * Obtiene un técnico por ID
+   * Obtiene los detalles de un técnico específico.
    */
-  getTecnico(id: number): Observable<TecnicoResponse> {
-    return this.http.get<TecnicoResponse>(`${this.baseUrl}/${id}`);
+  getTecnico(idTecnico: number): Observable<Tecnico> {
+    return this.http.get<Tecnico>(`${this.apiUrl}/${idTecnico}`);
   }
 
   /**
-   * Obtiene técnicos disponibles
+   * Registra un nuevo técnico.
    */
-  getTecnicosDisponibles(): Observable<TecnicoResponse[]> {
-    return this.http.get<TecnicoResponse[]>(`${this.baseUrl}?disponible=true`);
+  createTecnico(tecnico: TecnicoCreate): Observable<Tecnico> {
+    return this.http.post<Tecnico>(`${this.apiUrl}/`, tecnico);
   }
 
   /**
-   * Crea un nuevo técnico
+   * Actualiza el estado o la ubicación de un técnico.
    */
-  crearTecnico(data: TecnicoCreate): Observable<TecnicoResponse> {
-    return this.http.post<TecnicoResponse>(`${this.baseUrl}`, data);
+  updateTecnico(idTecnico: number, tecnico: TecnicoUpdate): Observable<Tecnico> {
+    return this.http.put<Tecnico>(`${this.apiUrl}/${idTecnico}`, tecnico);
   }
 
   /**
-   * Actualiza un técnico
+   * Da de baja a un técnico (Borrado lógico).
    */
-  actualizarTecnico(id: number, data: TecnicoUpdate): Observable<TecnicoResponse> {
-    return this.http.put<TecnicoResponse>(`${this.baseUrl}/${id}`, data);
-  }
-
-  /**
-   * Cambia la disponibilidad de un técnico
-   */
-  cambiarDisponibilidad(id: number, disponible: boolean): Observable<TecnicoResponse> {
-    return this.http.patch<TecnicoResponse>(`${this.baseUrl}/${id}/disponibilidad`, {
-      esta_disponible: disponible,
-    });
-  }
-
-  /**
-   * Elimina un técnico
-   */
-  eliminarTecnico(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
+  deleteTecnico(idTecnico: number): Observable<Tecnico> {
+    return this.http.delete<Tecnico>(`${this.apiUrl}/${idTecnico}`);
   }
 }

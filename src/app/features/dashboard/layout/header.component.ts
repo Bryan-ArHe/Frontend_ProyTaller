@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from '../../../core/services/layout.service';
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-header',
@@ -40,15 +42,19 @@ import { LayoutService } from '../../../core/services/layout.service';
 export class HeaderComponent {
   private readonly authService = inject(AuthService);
   protected readonly layoutService = inject(LayoutService);
+  private readonly destroyRef = inject(DestroyRef);
 
   userEmail = '';
+  
 
   constructor() {
-    this.authService.user$.subscribe((user) => {
-      if (user) {
-        this.userEmail = user.email;
-      }
-    });
+    this.authService.user$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        if (user) {
+          this.userEmail = user.email;
+        }
+      });
   }
 
   onLogout(): void {
@@ -67,3 +73,4 @@ export class HeaderComponent {
     });
   }
 }
+

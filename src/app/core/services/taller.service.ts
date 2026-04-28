@@ -1,54 +1,51 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {
-  GestorTaller,
-  GestorTallerCreate,
-  GestorTallerUpdate,
-  GestorTallerResponse,
-} from '../models/taller.model';
 import { environment } from '../../../environments/environment';
+import { Taller, TallerCreate, TallerUpdate } from '../models/taller.model';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TallerService {
-  private readonly baseUrl = `${environment.apiUrl}/talleres`;
+  // Construimos la URL base apuntando al router que hicimos en FastAPI
+  private apiUrl = `${environment.apiUrl}/talleres/`;
 
-  constructor(private readonly http: HttpClient) {}
+  // Inyectamos el cliente HTTP de Angular
+  constructor(private http: HttpClient) { }
 
   /**
-   * Obtiene todos los talleres
+   * Obtiene la lista de todos los talleres activos (GET)
    */
-  getTalleres(): Observable<GestorTallerResponse[]> {
-    return this.http.get<GestorTallerResponse[]>(`${this.baseUrl}`);
+  getTalleres(skip: number = 0, limit: number = 100): Observable<Taller[]> {
+    return this.http.get<Taller[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`);
   }
 
   /**
-   * Obtiene un taller por ID
+   * Obtiene un taller específico por su ID (GET)
    */
-  getTaller(id: number): Observable<GestorTallerResponse> {
-    return this.http.get<GestorTallerResponse>(`${this.baseUrl}/${id}`);
+  getTaller(id: number): Observable<Taller> {
+    return this.http.get<Taller>(`${this.apiUrl}${id}`);
   }
 
   /**
-   * Crea un nuevo taller
+   * Crea un nuevo taller (POST)
    */
-  crearTaller(data: GestorTallerCreate): Observable<GestorTallerResponse> {
-    return this.http.post<GestorTallerResponse>(`${this.baseUrl}`, data);
+  createTaller(taller: TallerCreate): Observable<Taller> {
+    return this.http.post<Taller>(this.apiUrl, taller);
   }
 
   /**
-   * Actualiza un taller
+   * Actualiza los datos de un taller existente (PUT)
    */
-  actualizarTaller(id: number, data: GestorTallerUpdate): Observable<GestorTallerResponse> {
-    return this.http.put<GestorTallerResponse>(`${this.baseUrl}/${id}`, data);
+  updateTaller(id: number, taller: TallerUpdate): Observable<Taller> {
+    return this.http.put<Taller>(`${this.apiUrl}${id}`, taller);
   }
 
   /**
-   * Elimina un taller
+   * Desactiva un taller (Borrado lógico) (DELETE)
    */
-  eliminarTaller(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
+  deleteTaller(id: number): Observable<Taller> {
+    return this.http.delete<Taller>(`${this.apiUrl}${id}`);
   }
 }

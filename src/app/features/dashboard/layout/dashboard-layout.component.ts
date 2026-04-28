@@ -11,15 +11,14 @@ import { LayoutService } from '../../../core/services/layout.service';
   imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderComponent],
   template: `
     <div class="dashboard-container">
-      <!-- Sidebar dinámico -->
+      @if (layoutService.isSidebarOpen()) {
+        <div class="sidebar-overlay" (click)="layoutService.closeSidebar()"></div>
+      }
+
       <app-sidebar></app-sidebar>
 
-      <!-- Contenedor principal con efecto push -->
       <div class="main-wrapper" [class.sidebar-open]="layoutService.isSidebarOpen()">
-        <!-- Header -->
         <app-header></app-header>
-
-        <!-- Contenido principal -->
         <main class="main-content">
           <router-outlet></router-outlet>
         </main>
