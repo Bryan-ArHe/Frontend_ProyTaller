@@ -1,0 +1,56 @@
+<div class="tecnicos-container">
+  <div class="header-actions">
+    <h2>Gestión de Personal Técnico</h2>
+    <button class="btn-primary" (click)="abrirModalCrear()">
+      + Asignar Nuevo Técnico
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="alert-info">
+    Cargando la lista de técnicos operativos...
+  </div>
+  
+  <div *ngIf="errorMessage" class="alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div class="table-responsive" *ngIf="!isLoading && !errorMessage">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID Técnico</th>
+          <th>ID Cuenta (Usuario)</th>
+          <th>ID Taller</th>
+          <th>Especialidad</th>
+          <th>Estado Actual</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tecnico of tecnicos">
+          <td><strong>#{{ tecnico.id_tecnico }}</strong></td>
+          <td>Cuenta #{{ tecnico.id_usuario }}</td>
+          <td>Taller #{{ tecnico.id_taller }}</td>
+          <td>{{ tecnico.especialidad || 'No definida' }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-libre': tecnico.estado_disponibilidad === 'Libre',
+              'badge-ocupado': tecnico.estado_disponibilidad === 'Ocupado',
+              'badge-inactivo': tecnico.estado_disponibilidad === 'Inactivo'
+            }">
+              {{ tecnico.estado_disponibilidad }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-edit" (click)="editarTecnico(tecnico)">Editar</button>
+            <button class="btn-delete" (click)="desactivarTecnico(tecnico.id_tecnico)">Dar de Baja</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="tecnicos.length === 0" class="empty-state">
+      No hay técnicos registrados o activos en la plataforma.
+    </div>
+  </div>
+</div>

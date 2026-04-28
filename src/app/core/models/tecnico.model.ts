@@ -1,33 +1,32 @@
-import { Usuario } from './auth.model';
-
-export interface Tecnico extends Usuario {
+// 1. INTERFAZ PRINCIPAL (Lo que recibimos del backend: GET /tecnicos)
+export interface Tecnico {
   id_tecnico: number;
-  id_taller: number;
-  nombres: string;
-  especialidad: string;
-  esta_disponible: boolean;
-}
-
-export interface TecnicoCreate {
-  email: string;
-  telefono: string;
-  password: string;
-  nombres: string;
-  especialidad: string;
-  id_taller: number;
-  id_rol: number;
-}
-
-export interface TecnicoUpdate {
-  nombres?: string;
+  id_usuario: number; // Foránea a Usuario
+  id_taller: number;  // Foránea a Taller
   especialidad?: string;
-  esta_disponible?: boolean;
-  email?: string;
-  telefono?: string;
+  estado_disponibilidad: string; // 'Libre', 'Ocupado', 'Inactivo'
+  
+  // Coordenadas para el sistema de despacho
+  latitud_actual?: number;
+  longitud_actual?: number;
+  
+  created_at: string;
 }
 
-export interface TecnicoResponse extends Tecnico {
-  taller_nombre?: string;
-  created_at?: string;
-  updated_at?: string;
+// 2. INTERFAZ DE CREACIÓN (Lo que enviamos al backend: POST /tecnicos)
+export interface TecnicoCreate {
+  id_usuario: number;
+  id_taller: number;
+  especialidad?: string;
+  estado_disponibilidad?: string; // FastAPI pone 'Libre' por defecto si no se envía
+  latitud_actual?: number;
+  longitud_actual?: number;
+}
+
+// 3. INTERFAZ DE ACTUALIZACIÓN (Lo que enviamos al backend: PUT /tecnicos/{id})
+export interface TecnicoUpdate {
+  especialidad?: string;
+  estado_disponibilidad?: string;
+  latitud_actual?: number;
+  longitud_actual?: number;
 }
