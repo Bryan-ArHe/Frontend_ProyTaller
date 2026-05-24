@@ -20,12 +20,13 @@ export class AuthService {
   ) {}
 
   login(data: LoginData): Observable<UsuarioResponse> {
-    // El backend espera email, no username
+    // El backend espera OAuth2PasswordRequestForm (form-data)
+    const formData = new FormData();
+    formData.append('username', data.email); // OAuth2 usa 'username' no 'email'
+    formData.append('password', data.password);
+
     return this.http
-      .post<TokenResponse>(`${this.baseUrl}/login`, {
-        email: data.email,
-        password: data.password,
-      })
+      .post<TokenResponse>(`${this.baseUrl}/login`, formData)
       .pipe(
         tap((res) => this.setToken(res.access_token)),
         switchMap(() => this.me()),

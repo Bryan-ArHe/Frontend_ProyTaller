@@ -34,10 +34,10 @@ const MENU_ITEMS: MenuItem[] = [
       {
         label: 'Mi Perfil',
         path: 'perfil',
-        roles: ['admin', 'tecnico', 'cliente', 'gestor_taller'],
+        roles: ['Administrador', 'Tecnico', 'Cliente', 'GestorTaller'],
       },
-      { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['admin'] },
-      { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['admin'] },
+      { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['Administrador'] },
+      { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['Administrador'] },
     ],
   },
 
@@ -47,9 +47,9 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Cuentas y Vehículos',
     icon: '🚙',
     subItems: [
-      { label: 'Mis Vehículos', path: 'vehiculos', roles: ['cliente'] },
-      { label: 'Gestión de Talleres', path: 'talleres', roles: ['gestor_taller', 'admin'] },
-      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['gestor_taller', 'admin'] },
+      { label: 'Mis Vehículos', path: 'vehiculos', roles: ['Cliente'] },
+      { label: 'Gestión de Talleres', path: 'talleres', roles: ['GestorTaller', 'Administrador'] },
+      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['GestorTaller', 'Administrador'] },
     ],
   },
 
@@ -59,13 +59,13 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Captura de Emergencias',
     icon: '🆘',
     subItems: [
-      { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['cliente'] },
+      { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['Cliente'] },
       {
         label: 'Historial de Incidentes',
         path: 'historial-incidentes',
-        roles: ['cliente', 'admin'],
+        roles: ['Cliente', 'Administrador'],
       },
-      { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['admin'] },
+      { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['Administrador'] },
     ],
   },
 
@@ -78,9 +78,9 @@ const MENU_ITEMS: MenuItem[] = [
       {
         label: 'Órdenes de Trabajo',
         path: 'ordenes-trabajo',
-        roles: ['gestor_taller', 'tecnico', 'admin'],
+        roles: ['GestorTaller', 'Tecnico', 'Administrador'],
       },
-      { label: 'Mi Inventario Móvil', path: 'inventario-movil', roles: ['tecnico'] },
+      { label: 'Mi Inventario Móvil', path: 'inventario-movil', roles: ['Tecnico'] },
     ],
   },
 
@@ -93,12 +93,12 @@ const MENU_ITEMS: MenuItem[] = [
       {
         label: 'Rastreo en Vivo',
         path: 'rastreo-vivo',
-        roles: ['cliente', 'gestor_taller', 'admin'],
+        roles: ['Cliente', 'GestorTaller', 'Administrador'],
       },
       {
         label: 'Bandeja de Mensajes',
         path: 'mensajes',
-        roles: ['admin', 'tecnico', 'cliente'],
+        roles: ['Administrador', 'Tecnico', 'Cliente'],
       },
     ],
   },
@@ -109,8 +109,8 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Finanzas y B2B',
     icon: '💰',
     subItems: [
-      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['cliente', 'gestor_taller'] },
-      { label: 'Panel de Comisiones', path: 'comisiones', roles: ['admin'] },
+      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['Cliente', 'GestorTaller'] },
+      { label: 'Panel de Comisiones', path: 'comisiones', roles: ['Administrador'] },
     ],
   },
 
@@ -120,7 +120,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Auditoría y Logs',
     icon: '📋',
     subItems: [
-      { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['admin'] },
+      { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['Administrador'] },
     ],
   },
 ];
@@ -239,7 +239,8 @@ export class SidebarComponent {
    * Verificar si el usuario tiene el rol requerido
    */
   private hasRole(itemRoles: string[]): boolean {
-    return itemRoles.includes(this.userRole.toLowerCase());
+    const roleLower = this.userRole.toLowerCase();
+    return itemRoles.some((r) => r.toLowerCase() === roleLower);
   }
 
   /**
@@ -269,12 +270,12 @@ export class SidebarComponent {
    */
   private getRoleName(id_rol: number): string {
     const roleMap: { [key: number]: string } = {
-      1: 'admin',
-      2: 'tecnico',
-      3: 'cliente',
-      4: 'gestor_taller',
+      1: 'Administrador',
+      2: 'Tecnico',
+      3: 'Cliente',
+      4: 'GestorTaller',
     };
-    return roleMap[id_rol] || 'cliente';
+    return roleMap[id_rol] || 'Cliente';
   }
 }
 

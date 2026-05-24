@@ -4,6 +4,7 @@
  */
 export const environment = {
   production: true,
-  apiUrl: 'https://api.tudominio.com',
+  // Apuntar al backend local en desarrollo
+  apiUrl: 'http://localhost:8000',
   apiTimeout: 30000, // 30 segundos
 };
