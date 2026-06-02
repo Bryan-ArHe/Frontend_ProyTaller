@@ -1,10 +1,10 @@
 /**
  * PRODUCCIÓN
  * Configuración para el ambiente de producción
+ * Las variables de entorno NG_APP_* se reemplazan en buildtime
  */
 export const environment = {
   production: true,
-  // Apuntar al backend local en desarrollo
-  apiUrl: 'http://localhost:8000',
-  apiTimeout: 30000, // 30 segundos
+  apiUrl: process.env['NG_APP_API_URL'] || 'https://api.ejemplo.com',
+  apiTimeout: parseInt(process.env['NG_APP_API_TIMEOUT'] || '30000'),
 };
