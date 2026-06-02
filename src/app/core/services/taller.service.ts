@@ -1,18 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 import { Taller, TallerCreate, TallerUpdate } from '../models/taller.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TallerService {
-  // Construimos la URL base apuntando al router que hicimos en FastAPI
-  private apiUrl = `${environment.apiUrl}/talleres/`;
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService,
+  ) {}
 
-  // Inyectamos el cliente HTTP de Angular
-  constructor(private http: HttpClient) { }
+  private get apiUrl(): string {
+    return `${this.config.getApiUrl()}/talleres/`;
+  }
 
   /**
    * Obtiene la lista de todos los talleres activos (GET)

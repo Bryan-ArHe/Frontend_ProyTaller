@@ -1,0 +1,4 @@
+{
+  "apiUrl": "https://backend-proy-taller.vercel.app",
+  "apiTimeout": 30000
+}

@@ -3,15 +3,20 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { IncidenteRequest, IncidenteResponse } from '../models/incidente.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IncidenteService {
-  private readonly baseUrl = `${environment.apiUrl}/incidentes`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/incidentes`;
+  }
 
   /**
    * Reporta un nuevo incidente/emergencia

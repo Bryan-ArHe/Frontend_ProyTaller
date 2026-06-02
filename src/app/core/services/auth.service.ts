@@ -4,11 +4,10 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import { LoginData, TokenResponse, UsuarioCreate, UsuarioResponse } from '../models/auth.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly baseUrl = `${environment.apiUrl}/auth`;
   private readonly tokenKey = 'access_token';
 
   private readonly userSubject = new BehaviorSubject<UsuarioResponse | null>(null);
@@ -17,7 +16,12 @@ export class AuthService {
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
+    private readonly config: ConfigService,
   ) {}
+
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/auth`;
+  }
 
   login(data: LoginData): Observable<UsuarioResponse> {
     // El backend espera OAuth2PasswordRequestForm (form-data)
@@ -25,23 +29,19 @@ export class AuthService {
     formData.append('username', data.email); // OAuth2 usa 'username' no 'email'
     formData.append('password', data.password);
 
-    return this.http
-      .post<TokenResponse>(`${this.baseUrl}/login`, formData)
-      .pipe(
-        tap((res) => this.setToken(res.access_token)),
-        switchMap(() => this.me()),
-        catchError((error: HttpErrorResponse) => this.handleError('Error en login', error)),
-      );
+    return this.http.post<TokenResponse>(`${this.baseUrl}/login`, formData).pipe(
+      tap((res) => this.setToken(res.access_token)),
+      switchMap(() => this.me()),
+      catchError((error: HttpErrorResponse) => this.handleError('Error en login', error)),
+    );
   }
 
   register(data: UsuarioCreate): Observable<UsuarioResponse> {
-    return this.http
-      .post<TokenResponse>(`${this.baseUrl}/register`, data)
-      .pipe(
-        tap((res) => this.setToken(res.access_token)),
-        switchMap(() => this.me()),
-        catchError((error: HttpErrorResponse) => this.handleError('Error en registro', error)),
-      );
+    return this.http.post<TokenResponse>(`${this.baseUrl}/register`, data).pipe(
+      tap((res) => this.setToken(res.access_token)),
+      switchMap(() => this.me()),
+      catchError((error: HttpErrorResponse) => this.handleError('Error en registro', error)),
+    );
   }
 
   me(): Observable<UsuarioResponse> {

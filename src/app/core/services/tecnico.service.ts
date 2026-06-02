@@ -1,16 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 import { Tecnico, TecnicoCreate, TecnicoUpdate } from '../models/tecnico.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TecnicoService {
-  private apiUrl = `${environment.apiUrl}/tecnicos`;
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService,
+  ) {}
 
-  constructor(private http: HttpClient) { }
+  private get apiUrl(): string {
+    return `${this.config.getApiUrl()}/tecnicos`;
+  }
 
   // --- LECTURAS ESTRATÉGICAS ---
 

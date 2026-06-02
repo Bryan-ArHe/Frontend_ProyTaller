@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 import { Rol, Permiso } from '../models/auth.model';
 
 interface ActualizarPermisosRolData {
@@ -18,7 +18,11 @@ interface ActualizarPermisosRolData {
 })
 export class RolService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/roles`;
+  private readonly config = inject(ConfigService);
+
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/roles`;
+  }
 
   /**
    * Obtiene todos los roles disponibles

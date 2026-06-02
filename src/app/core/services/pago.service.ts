@@ -2,15 +2,20 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Pago, PagoRequest, PagoUpdate, PagoResponse } from '../models/pago.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PagoService {
-  private readonly baseUrl = `${environment.apiUrl}/pagos`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/pagos`;
+  }
 
   /**
    * Obtiene todos los pagos

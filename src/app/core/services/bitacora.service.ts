@@ -1,14 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 import { Bitacora } from '../models/bitacora.model';
 
 @Injectable({ providedIn: 'root' })
 export class BitacoraService {
-  private apiUrl = `${environment.apiUrl}/bitacora`;
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService,
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return `${this.config.getApiUrl()}/bitacora`;
+  }
 
   /**
    * Obtiene todos los registros de bitácora con filtros opcionales
@@ -50,4 +55,3 @@ export class BitacoraService {
     return this.http.get<Bitacora[]>(this.apiUrl, { params });
   }
 }
-

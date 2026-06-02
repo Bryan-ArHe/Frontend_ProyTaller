@@ -7,15 +7,20 @@ import {
   NotificacionPushUpdate,
   NotificacionPushResponse,
 } from '../models/notificacion.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificacionService {
-  private readonly baseUrl = `${environment.apiUrl}/notificaciones`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/notificaciones`;
+  }
 
   /**
    * Obtiene todas las notificaciones del usuario

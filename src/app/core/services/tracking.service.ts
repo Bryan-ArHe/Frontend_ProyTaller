@@ -6,15 +6,20 @@ import {
   UbicacionTrackingRequest,
   UbicacionTrackingResponse,
 } from '../models/tracking.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TrackingService {
-  private readonly baseUrl = `${environment.apiUrl}/tracking`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/tracking`;
+  }
 
   /**
    * Obtiene todas las ubicaciones de tracking

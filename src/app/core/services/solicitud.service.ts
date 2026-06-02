@@ -7,15 +7,20 @@ import {
   SolicitudServicioUpdate,
   SolicitudServicioResponse,
 } from '../models/solicitud.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SolicitudService {
-  private readonly baseUrl = `${environment.apiUrl}/solicitudes`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/solicitudes`;
+  }
 
   /**
    * Obtiene todas las solicitudes

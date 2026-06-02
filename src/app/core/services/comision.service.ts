@@ -9,16 +9,24 @@ import {
   CalificacionRequest,
   CalificacionResponse,
 } from '../models/comision.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComisionService {
-  private readonly baseUrlComision = `${environment.apiUrl}/comisiones`;
-  private readonly baseUrlCalificacion = `${environment.apiUrl}/calificaciones`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrlComision(): string {
+    return `${this.config.getApiUrl()}/comisiones`;
+  }
+
+  private get baseUrlCalificacion(): string {
+    return `${this.config.getApiUrl()}/calificaciones`;
+  }
 
   // ==================== COMISIONES ====================
 

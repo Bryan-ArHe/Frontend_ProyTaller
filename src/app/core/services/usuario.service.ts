@@ -13,15 +13,18 @@ import {
   UsuarioResponse,
 } from '../models/usuario.model';
 import { UsuarioCreate, UsuarioUpdate } from '../models/auth.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UsuarioService {
   private readonly http = inject(HttpClient);
-  // ✅ URL SIN /api - el backend NO tiene ese prefijo
-  private readonly baseUrl = `${environment.apiUrl}/usuarios`;
+  private readonly config = inject(ConfigService);
+
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/usuarios`;
+  }
 
   // ==================== MI PERFIL ====================
 
@@ -98,9 +101,7 @@ export class UsuarioService {
     return this.http
       .post<UsuarioPerfil>(`${this.baseUrl}/`, data)
       .pipe(
-        catchError((error: HttpErrorResponse) =>
-          this.handleError('Error creando usuario', error),
-        ),
+        catchError((error: HttpErrorResponse) => this.handleError('Error creando usuario', error)),
       );
   }
 

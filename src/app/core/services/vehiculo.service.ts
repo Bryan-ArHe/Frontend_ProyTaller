@@ -3,15 +3,20 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { VehiculoRequest, VehiculoResponse } from '../models/vehiculo.model';
-import { environment } from '../../../environments/environment';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VehiculoService {
-  private readonly baseUrl = `${environment.apiUrl}/vehiculos`;
+  constructor(
+    private readonly http: HttpClient,
+    private readonly config: ConfigService,
+  ) {}
 
-  constructor(private readonly http: HttpClient) {}
+  private get baseUrl(): string {
+    return `${this.config.getApiUrl()}/vehiculos`;
+  }
 
   /**
    * Obtiene todos los vehículos del usuario logueado
@@ -36,7 +41,7 @@ export class VehiculoService {
         catchError((error: HttpErrorResponse) => this.handleError('Error creando vehículo', error)),
       );
   }
-  
+
   /**
    * Obtiene un vehículo por ID
    */
