@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: proy-taller-frontend
+    env: docker
+    plan: free
+
+    # Puerto que expondrá el servicio
+    envVars:
+      - key: PORT
+        value: 80
+
+    # Región (puedes cambiarla a tu preferencia: us-west, us-east, eu-west, etc.)
+    region: us-east
+
+    # Ruta de health check
+    healthCheckPath: /index.html
+
+    # Reinicio automático
+    autoDeploy: true

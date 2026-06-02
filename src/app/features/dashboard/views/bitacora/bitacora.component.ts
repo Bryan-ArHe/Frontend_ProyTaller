@@ -62,6 +62,8 @@ type BitacoraLog = Bitacora;
         </div>
       </div>
 
+    
+    <div class="overflow-x-auto">
       <!-- Tabla de logs -->
       <div class="bg-white rounded-lg shadow overflow-hidden">
         @if (loading) {
@@ -163,6 +165,7 @@ type BitacoraLog = Bitacora;
           </div>
         }
       </div>
+    </div>
 
       <!-- Información -->
       <div class="mt-6 text-center text-sm text-gray-500">
