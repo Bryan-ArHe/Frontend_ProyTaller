@@ -5,6 +5,6 @@
  */
 export const environment = {
   production: true,
-  apiUrl: process.env['NG_APP_API_URL'] || 'https://api.ejemplo.com',
+  apiUrl: process.env['NG_APP_API_URL'] || 'https://backend-proy-taller.vercel.app',
   apiTimeout: parseInt(process.env['NG_APP_API_TIMEOUT'] || '30000'),
 };
