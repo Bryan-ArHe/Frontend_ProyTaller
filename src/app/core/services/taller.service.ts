@@ -1,54 +1,29 @@
-import { Injectable } from '@angular/core';
+// src/app/core/services/taller.service.ts
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ConfigService } from './config.service';
-import { Taller, TallerCreate, TallerUpdate } from '../models/taller.model';
+import { environment } from '../../../environments/environment';
+import { Taller, TallerCreate } from '../models/taller.model';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TallerService {
-  constructor(
-    private http: HttpClient,
-    private config: ConfigService,
-  ) {}
+  private http = inject(HttpClient);
+  private apiUrl = `${environment.apiUrl}/talleres`; // Ajustar de acuerdo a tu main.py
 
-  private get apiUrl(): string {
-    return `${this.config.getApiUrl()}/talleres/`;
+  // GET /talleres/ - Listar talleres asociados al tenant del gestor actual
+  listarTalleres(): Observable<Taller[]> {
+    return this.http.get<Taller[]>(`${this.apiUrl}/`); // Nota la / al final para evitar el 307
   }
 
-  /**
-   * Obtiene la lista de todos los talleres activos (GET)
-   */
-  getTalleres(skip: number = 0, limit: number = 100): Observable<Taller[]> {
-    return this.http.get<Taller[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`);
+  // POST /talleres/ - Crear una sucursal inyectando la ubicación para PostGIS
+  crearTaller(taller: TallerCreate): Observable<Taller> {
+    return this.http.post<Taller>(`${this.apiUrl}/`, taller);
   }
 
-  /**
-   * Obtiene un taller específico por su ID (GET)
-   */
-  getTaller(id: number): Observable<Taller> {
-    return this.http.get<Taller>(`${this.apiUrl}${id}`);
-  }
-
-  /**
-   * Crea un nuevo taller (POST)
-   */
-  createTaller(taller: TallerCreate): Observable<Taller> {
-    return this.http.post<Taller>(this.apiUrl, taller);
-  }
-
-  /**
-   * Actualiza los datos de un taller existente (PUT)
-   */
-  updateTaller(id: number, taller: TallerUpdate): Observable<Taller> {
-    return this.http.put<Taller>(`${this.apiUrl}${id}`, taller);
-  }
-
-  /**
-   * Desactiva un taller (Borrado lógico) (DELETE)
-   */
-  deleteTaller(id: number): Observable<Taller> {
-    return this.http.delete<Taller>(`${this.apiUrl}${id}`);
+  // GET /talleres/1 - Obtener una sucursal específica con su lista de técnicos
+  obtenerTaller(id: number): Observable<Taller> {
+    return this.http.get<Taller>(`${this.apiUrl}/${id}/`);
   }
 }
