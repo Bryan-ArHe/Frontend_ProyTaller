@@ -26,4 +26,5 @@ export class EmpresaService {
     const url = `${this.API_URL}/saas/suscripcion/${idUsuarioAdmin}?id_nuevo_plan=${idPlan}&estado=${estado}`;
     return this.http.put<any>(url, {});
   }
+  
 }
