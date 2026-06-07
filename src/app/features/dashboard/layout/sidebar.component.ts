@@ -270,10 +270,11 @@ export class SidebarComponent {
    */
   private getRoleName(id_rol: number): string {
     const roleMap: { [key: number]: string } = {
-      1: 'Administrador',
-      2: 'Tecnico',
-      3: 'Cliente',
-      4: 'GestorTaller',
+      1: 'superAdmin',
+      2: 'Administrador',
+      3: 'GestorTaller',
+      4: 'Tecnico',
+      5: 'Cliente',
     };
     return roleMap[id_rol] || 'Cliente';
   }
