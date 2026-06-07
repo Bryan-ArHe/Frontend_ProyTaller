@@ -7,7 +7,7 @@ export interface PlanSaas {
 export interface SuscripcionTaller {
   id_plan: number;
   estado_suscripcion: string;
-  plan_saas?: PlanSaas;
+  plan?: PlanSaas;
 }
 
 export interface EmpresaSaaS {

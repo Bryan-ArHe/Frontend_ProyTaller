@@ -3,9 +3,14 @@
   <div class="flex justify-between items-center mb-6">
     <div>
       <h1 class="text-3xl font-bold tracking-tight text-indigo-400">Control de Empresas (SaaS)</h1>
-      <p class="text-gray-400 mt-1">Alta de clientes corporativos y gestión de cuotas de almacenamiento.</p>
+      <p class="text-gray-400 mt-1">
+        Alta de clientes corporativos y gestión de cuotas de almacenamiento.
+      </p>
     </div>
-    <button (click)="abrirModalParaCrear()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md">
+    <button
+      (click)="abrirModalParaCrear()"
+      class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md"
+    >
       ➕ Registrar Nueva Empresa
     </button>
   </div>
@@ -28,25 +33,40 @@
           <td class="p-4 font-medium text-white">{{ empresa.nombre }} {{ empresa.apellido }}</td>
           <td class="p-4 text-gray-300">{{ empresa.email }}</td>
           <td class="p-4">
-            <span class="px-2 py-1 rounded text-xs font-semibold bg-indigo-900/50 text-indigo-300 border border-indigo-700">
-              {{ empresa.suscripciones?.[0]?.plan_saas?.nombre_plan || 'Sin Plan' }}
+            <span
+              class="px-2 py-1 rounded text-xs font-semibold bg-indigo-900/50 text-indigo-300 border border-indigo-700"
+            >
+              {{ empresa.suscripciones?.[0]?.plan?.nombre_plan || 'Sin Plan' }}
             </span>
           </td>
           <td class="p-4 text-gray-400">
-            🏢 Talleres: {{ empresa.suscripciones?.[0]?.plan_saas?.limite_talleres || 0 }} | 
-            🔧 Técnicos: {{ empresa.suscripciones?.[0]?.plan_saas?.limite_tecnicos || 0 }}
+            🏢 Talleres: {{ empresa.suscripciones?.[0]?.plan?.limite_talleres || 0 }} | 🔧 Técnicos:
+            {{ empresa.suscripciones?.[0]?.plan?.limite_tecnicos || 0 }}
           </td>
           <td class="p-4">
-            <span [ngClass]="{
-              'bg-green-900/50 text-green-300 border-green-700': empresa.suscripciones?.[0]?.estado_suscripcion === 'Activo',
-              'bg-red-900/50 text-red-300 border-red-700': empresa.suscripciones?.[0]?.estado_suscripcion !== 'Activo'
-            }" class="px-2 py-1 rounded text-xs font-semibold border">
+            <span
+              [ngClass]="{
+                'bg-green-900/50 text-green-300 border-green-700':
+                  empresa.suscripciones?.[0]?.estado_suscripcion === 'Activo',
+                'bg-red-900/50 text-red-300 border-red-700':
+                  empresa.suscripciones?.[0]?.estado_suscripcion !== 'Activo',
+              }"
+              class="px-2 py-1 rounded text-xs font-semibold border"
+            >
               {{ empresa.suscripciones?.[0]?.estado_suscripcion || 'Inactivo' }}
             </span>
           </td>
           <td class="p-4 text-center">
-            <button (click)="abrirModalParaEditar(empresa)" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+            <button
+              (click)="abrirModalParaEditar(empresa)"
+              class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            >
               ⚙️ Cambiar Plan
+            </button>
+            <button 
+              class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            >
+              
             </button>
           </td>
         </tr>
@@ -55,45 +75,72 @@
   </div>
 
   <!-- Modal Formulario -->
-  <div *ngIf="modalAbierto" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+  <div
+    *ngIf="modalAbierto"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center p-4 z-50"
+  >
     <div class="bg-gray-800 border border-gray-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
       <h3 class="text-xl font-bold text-white mb-4">
         {{ modoEdit ? 'Editar Configuración Comercial' : 'Suscribir Empresa Aliada' }}
       </h3>
-      
+
       <div class="space-y-4">
         <!-- Campos si es nueva empresa -->
         <div *ngIf="!modoEdit" class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-gray-400 mb-1">Nombre</label>
-            <input [(ngModel)]="formEmpresa.nombre" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+            <input
+              [(ngModel)]="formEmpresa.nombre"
+              type="text"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm"
+            />
           </div>
           <div>
             <label class="block text-xs text-gray-400 mb-1">Apellido</label>
-            <input [(ngModel)]="formEmpresa.apellido" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+            <input
+              [(ngModel)]="formEmpresa.apellido"
+              type="text"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm"
+            />
           </div>
         </div>
 
         <div *ngIf="!modoEdit">
           <label class="block text-xs text-gray-400 mb-1">Correo Electrónico</label>
-          <input [(ngModel)]="formEmpresa.email" type="email" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+          <input
+            [(ngModel)]="formEmpresa.email"
+            type="email"
+            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm"
+          />
         </div>
 
         <div *ngIf="!modoEdit" class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-gray-400 mb-1">Contraseña</label>
-            <input [(ngModel)]="formEmpresa.password" type="password" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm" placeholder="12345678">
+            <input
+              [(ngModel)]="formEmpresa.password"
+              type="password"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm"
+              placeholder="12345678"
+            />
           </div>
           <div>
             <label class="block text-xs text-gray-400 mb-1">Teléfono</label>
-            <input [(ngModel)]="formEmpresa.telefono" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+            <input
+              [(ngModel)]="formEmpresa.telefono"
+              type="text"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm"
+            />
           </div>
         </div>
 
         <!-- Campos de Suscripción -->
         <div>
           <label class="block text-xs text-gray-400 mb-1">Plan de Cuota Asignado</label>
-          <select [(ngModel)]="idPlanSeleccionado" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm">
+          <select
+            [(ngModel)]="idPlanSeleccionado"
+            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm"
+          >
             <option [ngValue]="1">Plan Básico (1 Taller / 3 Técnicos)</option>
             <option [ngValue]="2">Plan Premium (5 Talleres / 15 Técnicos)</option>
             <option [ngValue]="3">Plan Corporativo (20 Talleres / 100 Técnicos)</option>
@@ -102,7 +149,10 @@
 
         <div>
           <label class="block text-xs text-gray-400 mb-1">Estado Operativo</label>
-          <select [(ngModel)]="estadoSeleccionado" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm">
+          <select
+            [(ngModel)]="estadoSeleccionado"
+            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm"
+          >
             <option value="Activo">🟢 Activo / Al día</option>
             <option value="Suspendido">🔴 Suspendido por Mora</option>
             <option value="Vencido">⚠️ Contrato Expirado</option>
@@ -111,11 +161,23 @@
       </div>
 
       <div class="flex justify-end space-x-3 mt-6">
-        <button (click)="cerrarModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium">
+        <button
+          (click)="cerrarModal()"
+          class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium"
+        >
           Cancelar
         </button>
-        <button (click)="guardarCambios()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-medium">
-          {{ modoEdit ? 'Aplicar Atributos' : 'Dar de Alta' }}
+
+        <button
+          (click)="guardarCambios()"
+          [disabled]="!tieneCambios()"
+          [ngClass]="{
+            'opacity-50 cursor-not-allowed bg-gray-500': !tieneCambios(),
+            'bg-indigo-600 hover:bg-indigo-500 text-white': tieneCambios(),
+          }"
+          class="px-5 py-2 rounded-xl text-sm font-medium transition-all"
+        >
+          {{ modoEdit ? 'Aplicar' : 'Dar de Alta' }}
         </button>
       </div>
     </div>

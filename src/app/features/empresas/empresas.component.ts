@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; // 🌟 Agregamos ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { EmpresaSaaS } from '../../core/models/empresa.model';
-import { environment } from '../../../environments/environment'; // 🌟 Se adapta solo local y en la nube
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-empresas',
@@ -15,8 +15,8 @@ import { environment } from '../../../environments/environment'; // 🌟 Se adap
 export class EmpresasComponent implements OnInit {
   private empresaService = inject(EmpresaService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef); // 🌟 Inyectamos para forzar el renderizado inmediato
 
-  // 🌟 Usamos la variable de entorno global para evitar cambios manuales en producción
   private API_URL = environment.apiUrl; 
 
   listaEmpresas: EmpresaSaaS[] = [];
@@ -28,6 +28,10 @@ export class EmpresasComponent implements OnInit {
   formEmpresa: EmpresaSaaS = { nombre: '', apellido: '', email: '', password: '', telefono: '' };
   idPlanSeleccionado = 1;
   estadoSeleccionado = 'Activo';
+
+  // 🌟 Variables espejo para rastrear los valores de base de datos antes de editar
+  idPlanOriginal = 1;
+  estadoOriginal = 'Activo';
 
   ngOnInit() {
     this.cargarEmpresas();
@@ -50,6 +54,7 @@ export class EmpresasComponent implements OnInit {
       next: (data: any[]) => {
         this.listaEmpresas = data.filter((u: any) => u.rol?.nombre === 'Administrador');
         console.log('🏢 Empresas cargadas con éxito:', this.listaEmpresas);
+        this.cdr.detectChanges(); // 🌟 Avisa a la vista que refresque la tabla de fondo
       },
       error: (err: any) => {
         console.error('❌ Error cargando empresas:', err);
@@ -69,14 +74,30 @@ export class EmpresasComponent implements OnInit {
   abrirModalParaEditar(empresa: EmpresaSaaS) {
     this.modoEdit = true;
     this.empresaSeleccionada = empresa;
-    this.idPlanSeleccionado = empresa.suscripciones?.[0]?.id_plan || 1;
-    this.estadoSeleccionado = empresa.suscripciones?.[0]?.estado_suscripcion || 'Activo';
+    
+    const planActual = empresa.suscripciones?.[0]?.id_plan || 1;
+    const estadoActual = empresa.suscripciones?.[0]?.estado_suscripcion || 'Activo';
+
+    this.idPlanSeleccionado = planActual;
+    this.estadoSeleccionado = estadoActual;
+
+    // 🌟 Guardamos el estado original para comparar si hubo cambios reales
+    this.idPlanOriginal = planActual;
+    this.estadoOriginal = estadoActual;
+
     this.modalAbierto = true;
+  }
+
+  // 🌟 Condición: Retorna true si el usuario alteró al menos una opción del modal
+  tieneCambios(): boolean {
+    if (!this.modoEdit) return true; // En creación siempre está habilitado
+    return this.idPlanSeleccionado !== this.idPlanOriginal || this.estadoSeleccionado !== this.estadoOriginal;
   }
 
   cerrarModal() {
     this.modalAbierto = false;
     this.empresaSeleccionada = null;
+    this.cdr.detectChanges(); // 🌟 Desaparece el HTML del modal al instante
   }
 
   guardarCambios() {
@@ -87,7 +108,7 @@ export class EmpresasComponent implements OnInit {
         next: () => {
           alert('📦 ¡Límites de la empresa actualizados con éxito!');
           this.cerrarModal();
-          this.cargarEmpresas();
+          this.cargarEmpresas(); // 🚀 Al quitar el setTimeout, la tabla se lee sin delays asíncronos
         },
         error: (err: any) => alert('❌ Error al actualizar suscripción.')
       });
@@ -108,7 +129,7 @@ export class EmpresasComponent implements OnInit {
           const idNuevo = nuevoUsuario.id_usuario || nuevoUsuario.id;
           this.vincularPlanSaaS(idNuevo);
         },
-        error: (err: any) => { // 🌟 Tipado estricto :any agregado para evitar el error TS7006
+        error: (err: any) => {
           if (err.status === 400 && err.error?.detail?.includes('ya está registrado')) {
             console.log('📌 El administrador ya existe. Procediendo a registrar/actualizar el plan SaaS...');
             
