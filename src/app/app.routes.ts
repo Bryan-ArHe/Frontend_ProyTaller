@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard'; // Tu guard jerárquico corregido
+
 
 export const routes: Routes = [
   {
@@ -19,4 +21,9 @@ export const routes: Routes = [
   },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' },
+  {
+    path: 'gestion-empresas',
+    loadComponent: () => import('./features/empresas/empresas.component').then(m => m.EmpresasComponent),
+    canActivate: [AdminGuard] // Protegido para que solo entre el superAdmin o Admin
+  }
 ];

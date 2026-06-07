@@ -123,6 +123,15 @@ const MENU_ITEMS: MenuItem[] = [
       { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['Administrador'] },
     ],
   },
+
+   {
+    id: 'empresa',
+    label: 'Gestion de Empresas',
+    icon: '🏢',
+    subItems: [
+      { label: 'Empresas', path: '/dashboard/gestion-empresas', roles: ['superAdmin'] },
+    ],
+  },
 ];
 
 // ==================== COMPONENTE ====================
@@ -228,7 +237,6 @@ export class SidebarComponent {
    * Obtiene los paquetes visibles filtrados por rol
    */
   get visiblePaquetes(): MenuItem[] {
-    const userRole = this.userRole.toLowerCase();
     return MENU_ITEMS.map((paquete) => ({
       ...paquete,
       subItems: paquete.subItems.filter((item) => this.hasRole(item.roles)),
@@ -246,12 +254,8 @@ export class SidebarComponent {
   /**
    * Toggle para expandir/colapsar un paquete
    */
-  togglePaquete(paqueteId: string): void {
-    if (this.expandedPaquete === paqueteId) {
-      this.expandedPaquete = '';
-    } else {
-      this.expandedPaquete = paqueteId;
-    }
+togglePaquete(paqueteId: string): void {
+    this.expandedPaquete = this.expandedPaquete === paqueteId ? '' : paqueteId;
   }
 
   /**

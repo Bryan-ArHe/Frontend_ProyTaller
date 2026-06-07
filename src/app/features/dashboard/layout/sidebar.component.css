@@ -299,7 +299,7 @@
   }
 
   .sidebar.sidebar-open {
-    margin-left: 0;
+    margin-left: 10px;
   }
 
   .logo-subtitle {

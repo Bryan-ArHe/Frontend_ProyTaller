@@ -40,7 +40,7 @@ export const dashboardRoutes: Routes = [
       {
         path: 'talleres',
         loadComponent: () =>
-          import('./views/talleres/talleres.component').then((m) => m.TalleresComponent),
+          import('../talleres/talleres.component').then((m) => m.TalleresComponent),
       },
       {
         path: 'tecnicos',
@@ -112,6 +112,13 @@ export const dashboardRoutes: Routes = [
           import('./views/bitacora/bitacora.component').then((m) => m.BitacoraComponent),
         canActivate: [AdminGuard],
       },
+      // Gestión de Empresas (Solo para SuperAdmin)
+      {
+        path: 'gestion-empresas',
+        loadComponent: () =>
+          import('../empresas/empresas.component').then((m) => m.EmpresasComponent),
+        canActivate: [AdminGuard],
+      }
     ],
   },
 ];

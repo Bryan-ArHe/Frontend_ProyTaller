@@ -1,0 +1,123 @@
+<div class="p-6 bg-gray-900 min-h-screen text-white">
+  <!-- Cabecera -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight text-indigo-400">Control de Empresas (SaaS)</h1>
+      <p class="text-gray-400 mt-1">Alta de clientes corporativos y gestión de cuotas de almacenamiento.</p>
+    </div>
+    <button (click)="abrirModalParaCrear()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md">
+      ➕ Registrar Nueva Empresa
+    </button>
+  </div>
+
+  <!-- Tabla de Datos -->
+  <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-700 text-gray-300 uppercase text-xs tracking-wider">
+          <th class="p-4">Empresa / Dueño</th>
+          <th class="p-4">Correo Corporativo</th>
+          <th class="p-4">Plan SaaS</th>
+          <th class="p-4">Capacidad Asignada</th>
+          <th class="p-4">Estado</th>
+          <th class="p-4 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-700 text-sm">
+        <tr *ngFor="let empresa of listaEmpresas" class="hover:bg-gray-750 transition-colors">
+          <td class="p-4 font-medium text-white">{{ empresa.nombre }} {{ empresa.apellido }}</td>
+          <td class="p-4 text-gray-300">{{ empresa.email }}</td>
+          <td class="p-4">
+            <span class="px-2 py-1 rounded text-xs font-semibold bg-indigo-900/50 text-indigo-300 border border-indigo-700">
+              {{ empresa.suscripciones?.[0]?.plan_saas?.nombre_plan || 'Sin Plan' }}
+            </span>
+          </td>
+          <td class="p-4 text-gray-400">
+            🏢 Talleres: {{ empresa.suscripciones?.[0]?.plan_saas?.limite_talleres || 0 }} | 
+            🔧 Técnicos: {{ empresa.suscripciones?.[0]?.plan_saas?.limite_tecnicos || 0 }}
+          </td>
+          <td class="p-4">
+            <span [ngClass]="{
+              'bg-green-900/50 text-green-300 border-green-700': empresa.suscripciones?.[0]?.estado_suscripcion === 'Activo',
+              'bg-red-900/50 text-red-300 border-red-700': empresa.suscripciones?.[0]?.estado_suscripcion !== 'Activo'
+            }" class="px-2 py-1 rounded text-xs font-semibold border">
+              {{ empresa.suscripciones?.[0]?.estado_suscripcion || 'Inactivo' }}
+            </span>
+          </td>
+          <td class="p-4 text-center">
+            <button (click)="abrirModalParaEditar(empresa)" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+              ⚙️ Cambiar Plan
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Formulario -->
+  <div *ngIf="modalAbierto" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+    <div class="bg-gray-800 border border-gray-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+      <h3 class="text-xl font-bold text-white mb-4">
+        {{ modoEdit ? 'Editar Configuración Comercial' : 'Suscribir Empresa Aliada' }}
+      </h3>
+      
+      <div class="space-y-4">
+        <!-- Campos si es nueva empresa -->
+        <div *ngIf="!modoEdit" class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Nombre</label>
+            <input [(ngModel)]="formEmpresa.nombre" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Apellido</label>
+            <input [(ngModel)]="formEmpresa.apellido" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+          </div>
+        </div>
+
+        <div *ngIf="!modoEdit">
+          <label class="block text-xs text-gray-400 mb-1">Correo Electrónico</label>
+          <input [(ngModel)]="formEmpresa.email" type="email" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+        </div>
+
+        <div *ngIf="!modoEdit" class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Contraseña</label>
+            <input [(ngModel)]="formEmpresa.password" type="password" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm" placeholder="12345678">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Teléfono</label>
+            <input [(ngModel)]="formEmpresa.telefono" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm">
+          </div>
+        </div>
+
+        <!-- Campos de Suscripción -->
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Plan de Cuota Asignado</label>
+          <select [(ngModel)]="idPlanSeleccionado" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm">
+            <option [ngValue]="1">Plan Básico (1 Taller / 3 Técnicos)</option>
+            <option [ngValue]="2">Plan Premium (5 Talleres / 15 Técnicos)</option>
+            <option [ngValue]="3">Plan Corporativo (20 Talleres / 100 Técnicos)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Estado Operativo</label>
+          <select [(ngModel)]="estadoSeleccionado" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm">
+            <option value="Activo">🟢 Activo / Al día</option>
+            <option value="Suspendido">🔴 Suspendido por Mora</option>
+            <option value="Vencido">⚠️ Contrato Expirado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 mt-6">
+        <button (click)="cerrarModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium">
+          Cancelar
+        </button>
+        <button (click)="guardarCambios()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-medium">
+          {{ modoEdit ? 'Aplicar Atributos' : 'Dar de Alta' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

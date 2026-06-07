@@ -1,8 +1,8 @@
-// src/app/features/dashboard/views/talleres/talleres.component.ts
+// src/app/features/talleres/talleres.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
-import { TallerService } from '../../../../core/services/taller.service';
-import { Taller } from '../../../../core/models/taller.model';
+import { TallerService } from '../../core/services/taller.service';
+import { Taller } from '../../core/models/taller.model';
 
 @Component({
   selector: 'app-talleres',
