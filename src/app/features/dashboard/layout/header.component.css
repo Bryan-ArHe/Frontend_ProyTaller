@@ -1,174 +1,101 @@
-/* ==================== HEADER PRINCIPAL ==================== */
+/* ==========================================================================
+   HEADER: ESTILOS GENERALES
+   ========================================================================== */
 .app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4rem; /* 64px */
-  background-color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 64px;
+  background-color: #1e293b; /* Slate 800 */
+  border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
-  z-index: 50;
-  transition: all 0.3s ease;
+  padding: 0 1.5rem;
 }
 
-/* ==================== CONTENEDOR IZQUIERDO ==================== */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  flex: 1;
+  gap: 1.25rem;
 }
 
-/* ==================== SALUDO DEL USUARIO ==================== */
-.user-greeting {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
+/* Saludo de Usuario */
+.user-greeting { display: flex; flex-direction: column; }
+.greeting-row { display: flex; align-items: center; gap: 0.5rem; }
+.greeting-title { font-size: 1rem; font-weight: 600; margin: 0; color: #fff; }
+.greeting-time { font-size: 0.75rem; color: #94a3b8; margin: 0; }
 
-.greeting-title {
-  font-size: 1.125rem; /* 18px */
-  font-weight: bold;
-  color: #1f2937;
-  margin: 0;
+/* Badges de Roles */
+.role-badge {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  background-color: #475569;
+  color: #cbd5e1;
 }
+.badge-admin { background-color: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.badge-gestor { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; }
 
-.greeting-time {
-  font-size: 0.875rem; /* 14px */
-  color: #6b7280;
-  margin: 0;
-}
-
-/* ==================== BOTÓN CERRAR SESIÓN ==================== */
+/* Botón de Cerrar Sesión */
 .logout-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #dc2626;
-  color: white;
-  font-weight: 600;
-  padding: 0.5rem 1.5rem;
-  border: none;
+  background-color: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
+  transition: all 0.2s;
 }
-
 .logout-btn:hover {
-  background-color: #b91c1c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
-.logout-btn:active {
-  transform: translateY(0);
-}
-
-.logout-icon {
-  font-size: 1.1rem;
-}
-
-.logout-text {
-  white-space: nowrap;
-}
-
-/* ==================== BOTÓN HAMBURGUESA ==================== */
+/* ==========================================================================
+   BOTÓN HAMBURGUESA INTERACTIVO
+   ========================================================================== */
 .hamburger-btn {
-  display: none;
+  display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  background-color: transparent;
+  justify-content: space-between;
+  width: 20px;
+  height: 14px;
+  background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-right: 1rem;
-  z-index: 51;
 }
 
 .hamburger-btn span {
-  display: block;
-  width: 1.5rem;
-  height: 0.25rem;
-  background-color: #1f2937;
-  border-radius: 0.125rem;
-  margin: 0.25rem 0;
-  transition: all 0.3s ease;
+  width: 100%;
+  height: 2px;
+  background-color: #94a3b8;
+  transition: all 0.2s ease-in-out;
 }
 
-.hamburger-btn:hover span {
-  background-color: #374151;
-}
+/* Animación a 'X' cuando el menú está abierto */
+.hamburger-btn.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); background-color: #fff; }
+.hamburger-btn.active span:nth-child(2) { opacity: 0; }
+.hamburger-btn.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); background-color: #fff; }
 
-/* Animación del hamburguesa cuando está activo */
-.hamburger-btn.active span:nth-child(1) {
-  transform: rotate(45deg) translate(0.5rem, 0.5rem);
-}
-
-.hamburger-btn.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger-btn.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(0.5rem, -0.5rem);
-}
-
-/* ==================== RESPONSIVIDAD ==================== */
-/* En tablets y desktop (768px y más) */
-@media (min-width: 768px) {
-  .app-header {
-    padding: 0 2rem;
-  }
-
+/* ==========================================================================
+   RESPONSIVO Y ERGONOMÍA MÓVIL
+   ========================================================================== */
+@media (max-width: 1023.98px) {
+  /* En móviles ocultamos el botón hamburguesa del header, ya que tu diseño 
+     utiliza el botón flotante con Tailwind (fixed bottom-6 right-6) */
   .hamburger-btn {
-    display: none !important;
+    display: none;
   }
-}
-
-/* En móviles (menos de 768px) */
-@media (max-width: 767px) {
+  
   .app-header {
-    padding: 0 1rem;
+    padding-left: 1rem;
   }
-
-  .hamburger-btn {
-    display: flex;
-  }
-
-  .greeting-title {
-    font-size: 1rem;
-  }
-
-  .greeting-time {
-    display: none; /* Ocultar la hora en móviles para ahorrar espacio */
-  }
-
+  
   .logout-text {
-    display: none; /* Mostrar solo el icono en móviles */
-  }
-
-  .logout-btn {
-    padding: 0.5rem;
-    background-color: #dc2626;
-    min-width: 2.5rem;
-    justify-content: center;
-  }
-
-  .logout-icon {
-    font-size: 1.25rem;
-  }
-}
-
-/* En pantallas pequeñas (menos de 480px) */
-@media (max-width: 479px) {
-  .greeting-title {
-    font-size: 0.95rem;
+    display: none; /* En pantallas pequeñas solo dejamos el emoji 🚪 por espacio */
   }
 }

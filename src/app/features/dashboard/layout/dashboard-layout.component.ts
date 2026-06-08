@@ -9,22 +9,7 @@ import { LayoutService } from '../../../core/services/layout.service';
   selector: 'app-dashboard-layout',
   standalone: true,
   imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderComponent],
-  template: `
-    <div class="dashboard-container">
-      @if (layoutService.isSidebarOpen()) {
-        <div class="sidebar-overlay" (click)="layoutService.closeSidebar()"></div>
-      }
-
-      <app-sidebar></app-sidebar>
-
-      <div class="main-wrapper" [class.sidebar-open]="layoutService.isSidebarOpen()">
-        <app-header></app-header>
-        <main class="main-content">
-          <router-outlet></router-outlet>
-        </main>
-      </div>
-    </div>
-  `,
+  templateUrl: './dashboard-layout.component.html',
   styleUrls: ['./dashboard-layout.component.css'],
 })
 export class DashboardLayoutComponent {

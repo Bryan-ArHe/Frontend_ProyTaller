@@ -2,16 +2,14 @@
 <div class="talleres-container">
   <div class="header-actions">
     <h2>Gestión de Talleres</h2>
-    <button class="btn-primary" (click)="abrirModalCrear()">
+    <button *ngIf="usuarioRol === 'Administrador'" class="btn-primary" (click)="abrirModalCrear()">
       + Registrar Nuevo Taller
     </button>
   </div>
 
   <!-- Estado de Carga Coherente -->
-  <div class="alert-info" *ngIf="isLoading">
-    Cargando la lista de talleres desde el servidor...
-  </div>
-  
+  <div class="alert-info" *ngIf="isLoading">Cargando la lista de talleres desde el servidor...</div>
+
   <!-- Manejo de Excepciones del Servidor -->
   <div class="alert-error" *ngIf="errorMessage">
     {{ errorMessage }}
@@ -25,30 +23,50 @@
           <th>ID</th>
           <th>Nombre y Dirección</th>
           <th>Geolocalización (PostGIS WKT)</th>
-          <th>ID Gestor</th>
-          <th>Acciones</th>
+          <th>Gestor Responsable</th> <!-- 🌟 Título profesional para la defensa -->
+          <th *ngIf="usuarioRol === 'Administrador'">Acciones</th> <!-- 🌟 Oculta el encabezado si es Gestor -->
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let taller of talleres">
-          <!-- BUG RESUELTO: Cambiado taller.id por taller.id_taller -->
           <td>{{ taller.id_taller }}</td>
           <td>
-            <strong>{{ taller.nombre }}</strong><br>
+            <strong>{{ taller.nombre }}</strong><br />
             <small>{{ taller.direccion }}</small>
           </td>
-          <!-- VALOR AGREGADO: Muestra el punto geográfico real del mapa -->
           <td>
             <span class="badge geo-badge">
               {{ taller.ubicacion_wkt || 'Sin Coordenadas Registradas' }}
             </span>
           </td>
-          <!-- VISUALIZACIÓN MULTI-TENANT: Muestra el responsable de la sucursal -->
-          <td>ID #{{ taller.id_gestor }}</td>
-          <td class="actions-cell">
+
+          <!-- 🌟 VISUALIZACIÓN EN MEMORIA: Cruza el id_gestor con el catálogo que tienes en consola -->
+          <td>
+            <div *ngIf="taller.id_gestor; else sinGestor">
+              <span class="font-medium text-gray-200">
+                {{ obtenerNombreGestor(taller.id_gestor) }}
+              </span>
+              <br /><small class="text-xs text-gray-400">ID #{{ taller.id_gestor }}</small>
+            </div>
+            <ng-template #sinGestor>
+              <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-950/40 text-amber-400 border border-amber-800/60">
+                ⚠️ Sin Encargado
+              </span>
+            </ng-template>
+          </td>
+
+          <!-- Acciones restringidas al Administrador -->
+          <td *ngIf="usuarioRol === 'Administrador'" class="actions-cell flex space-x-2">
+            <button
+              class="btn-assign bg-zinc-700 hover:bg-zinc-600 text-zinc-200 px-3 py-1 rounded-lg text-xs font-medium"
+              (click)="abrirModalAsignarGestor(taller)"
+            >
+              👤 Responsable
+            </button>
             <button class="btn-edit" (click)="editarTaller(taller)">Editar</button>
-            <!-- BUG RESUELTO: Cambiado taller.id por taller.id_taller -->
-            <button class="btn-delete" (click)="desactivarTaller(taller.id_taller, taller.nombre)">Dar de Baja</button>
+            <button class="btn-delete" (click)="desactivarTaller(taller.id_taller, taller.nombre)">
+              Dar de Baja
+            </button>
           </td>
         </tr>
       </tbody>
@@ -57,6 +75,56 @@
     <!-- Estado Vacío Validado -->
     <div class="empty-state" *ngIf="talleres.length === 0">
       No hay talleres activos registrados para este tenant en el sistema.
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 🌟 SUB-MODAL: ASIGNACIÓN DE GESTOR (OPCIÓN B)                          -->
+<!-- ========================================================================= -->
+<div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" *ngIf="modalGestorAbierto">
+  <div class="modal-content bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl">
+    <h3 class="text-lg font-bold text-white mb-2">Asignar Responsable de Sucursal</h3>
+    <p class="text-sm text-gray-400 mb-4">
+      Selecciona al gestor encargado para el taller:
+      <span class="text-indigo-400 font-semibold">{{ tallerSeleccionado?.nombre }}</span>
+    </p>
+
+    <!-- Selector de Gestores de la Empresa -->
+    <div class="mb-5">
+      <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Gestores Disponibles</label>
+      <select
+        [(ngModel)]="idGestorSeleccionado"
+        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+      >
+        <!-- Opción para dejar vacante el taller -->
+        <option [ngValue]="null">-- Dejar sucursal sin encargado (Vacante) --</option>
+        <!-- Bucle con los gestores que le pertenecen al Administrador logueado -->
+        <option *ngFor="let gestor of listaGestores" [value]="gestor.id_usuario">
+          {{ gestor.nombre }} {{ gestor.apellido }} (ID: {{ gestor.id_usuario }})
+        </option>
+      </select>
+    </div>
+
+    <!-- Botonera del Modal con validación de cambios -->
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="cerrarModalGestor()"
+        class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="guardarAsignacionGestor()"
+        [disabled]="idGestorSeleccionado === tallerSeleccionado?.id_gestor"
+        [ngClass]="{
+          'opacity-40 cursor-not-allowed bg-gray-600': idGestorSeleccionado === tallerSeleccionado?.id_gestor,
+          'bg-indigo-600 hover:bg-indigo-500 text-white': idGestorSeleccionado !== tallerSeleccionado?.id_gestor
+        }"
+        class="px-5 py-2 rounded-xl text-sm font-medium transition-all"
+      >
+        Aplicar Cambio
+      </button>
     </div>
   </div>
 </div>

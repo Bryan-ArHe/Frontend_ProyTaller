@@ -1,0 +1,69 @@
+<aside class="sidebar" [class.sidebar-open]="layoutService.isSidebarOpen()">
+  <!-- Logo Corporativo -->
+  <div class="sidebar-logo">
+    <h1 class="logo-title">🚗 EmergAuto</h1>
+    <p class="logo-subtitle">Plataforma de Emergencias</p>
+  </div>
+
+  <!-- Navegación Dinámica Filtrada por RBAC -->
+  <nav class="sidebar-nav">
+    @for (paquete of visiblePaquetes; track paquete.id) {
+      <div class="nav-section">
+        <!-- Botón del paquete (acordeón) -->
+        <button
+          class="nav-section-btn"
+          [class.active]="expandedPaquete === paquete.id"
+          (click)="togglePaquete(paquete.id)"
+          type="button"
+        >
+          <div class="nav-section-left">
+            <span class="nav-icon">{{ paquete.icon }}</span>
+            <span class="nav-label">{{ paquete.label }}</span>
+          </div>
+          <svg
+            class="nav-chevron"
+            [class.rotated]="expandedPaquete === paquete.id"
+            stroke="currentColor"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        <!-- Sub-items (con validación de estado activo) -->
+        @if (expandedPaquete === paquete.id) {
+          <div class="nav-submenu">
+            @for (subItem of paquete.subItems; track subItem.path) {
+              <a
+                class="nav-subitem"
+                [routerLink]="subItem.path"
+                routerLinkActive="active"
+                (click)="onNavigation()"
+              >
+                <span class="nav-dot"></span>
+                <span class="nav-subitem-label">{{ subItem.label }}</span>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    }
+  </nav>
+
+  <!-- Panel de Contexto de Sesión (Footer) -->
+  <div class="sidebar-footer">
+    <div class="user-card-context">
+      <p class="user-label">Operador Autónomo:</p>
+      <p class="user-email" [title]="userEmail">{{ userEmail }}</p>
+      <div class="role-badge-container">
+        <span class="sidebar-role-tag">{{ userRole }}</span>
+      </div>
+    </div>
+  </div>
+</aside>

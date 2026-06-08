@@ -1,0 +1,35 @@
+<div 
+  class="dashboard-container" 
+  [class.sidebar-collapsed]="!layoutService.isSidebarOpen()"
+  [class.sidebar-open]="layoutService.isSidebarOpen()"
+>
+  
+  <!-- Fondo oscurecido para móviles -->
+  @if (layoutService.isSidebarOpen()) {
+    <div class="sidebar-overlay" (click)="layoutService.closeSidebar()"></div>
+  }
+
+  <!-- Componente del Menú Lateral -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Envoltorio del contenido de trabajo -->
+  <div class="main-wrapper">
+
+    <!-- 📱 BOTÓN FLOTANTE MÓVIL -->
+    <button
+      type="button"
+      (click)="layoutService.toggleSidebar()"
+      class="lg:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-2xl transition-transform active:scale-95 duration-200"
+    >
+      <span class="text-2xl font-bold leading-none">
+        {{ layoutService.isSidebarOpen() ? '✕' : '☰' }}
+      </span>
+    </button>
+
+    <app-header></app-header>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

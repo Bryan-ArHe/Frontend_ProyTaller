@@ -3,8 +3,8 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Guard que verifica si el usuario tiene el rol de ADMINISTRADOR
- * Solo permite acceso a rutas protegidas para admins
+ * Guard Centralizado de Seguridad Jerárquica (RBAC)
+ * Controla el perímetro administrativo del Tenant para los roles: superAdmin, Administrador y Gestor
  */
 export const AdminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -12,33 +12,54 @@ export const AdminGuard: CanActivateFn = (route, state) => {
 
   const currentUser = authService.getCurrentUser();
 
-// Verificar si el usuario está autenticado
+  // 1. 🛡️ Doble verificación defensiva de autenticación
   if (!currentUser) {
-    console.warn('❌ Acceso denegado: Usuario no autenticado');
+    console.warn('❌ [AdminGuard] Acceso bloqueado: Usuario no autenticado en el sistema.');
     void router.navigate(['/login']);
     return false;
   }
 
-// Obtener el nombre del rol, considerando que puede ser un objeto o una cadena
-let rolNombre = '';
-  if(currentUser.rol) {
-    if (typeof currentUser.rol === 'object') {
-      rolNombre = currentUser.rol.nombre || '';
-    } else if (typeof currentUser.rol === 'string') {
-      rolNombre = currentUser.rol;
-    }
-  }
+  // 2. 🔑 Extraer el rol normalizado (Garantizado por el AuthGuard previo)
+  const userRole = localStorage.getItem('usuario_rol') || '';
+  const path = route.routeConfig?.path || '';
 
-// Verificar si el rol del usuario es ADMINISTRADOR o superAdmin
-const tieneAccesoAdmin = rolNombre === 'Administrador' || rolNombre == 'superAdmin';
-  if (!tieneAccesoAdmin) {
-    console.warn(
-      `⚠️ Acceso denegado: Usuario "${currentUser.email}" con el rol "${rolNombre}" no tiene permisos administrativos`,
-    );
+  // =========================================================================
+  // 🏢 CASO 1: INFRAESTRUCTURA SAAS CORE (Exclusivo SuperAdmin)
+  // =========================================================================
+  if (path === 'gestion-empresas') {
+    if (userRole === 'superAdmin') {
+      console.log(`✅ [AdminGuard] Acceso Maestro concedido a infraestructura global para: ${currentUser.email}`);
+      return true;
+    }
+    console.warn(`⚠️ [AdminGuard] Bloqueo de seguridad: El rol "${userRole}" no pertenece al grupo SuperAdmin.`);
     void router.navigate(['/dashboard']);
     return false;
   }
 
-  console.log(`✅ Acceso de administrativo permitido para: ${currentUser.email} con rol: ${rolNombre}`);
-  return true;
+  // =========================================================================
+  // 🔧 CASO 2: OPERACIONES LOCALES DE TALLER (Gestor y Administrador)
+  // =========================================================================
+  if (path === 'tecnicos') {
+    if (userRole === 'Gestor' || userRole === 'Administrador') {
+      console.log(`✅ [AdminGuard] Acceso Operativo concedido para la gestión de mecánicos al rol: [${userRole}]`);
+      return true;
+    }
+    console.warn(`⚠️ [AdminGuard] Bloqueo: El rol "${userRole}" no posee credenciales para administrar personal de sucursal.`);
+    void router.navigate(['/dashboard']);
+    return false;
+  }
+
+  // =========================================================================
+  // 👑 CASO 3: ADMINISTRACIÓN DE FRANQUICIA CENTRAL (Solo Administrador)
+  // (gestion-usuarios, gestion-roles, bitacora, comisiones, monitor-triaje)
+  // =========================================================================
+  if (userRole === 'Administrador') {
+    console.log(`✅ [AdminGuard] Acceso Central permitido para: ${currentUser.email} en el submódulo /${path}`);
+    return true;
+  }
+
+  // ⛔ Rebote defensivo final si un rol no autorizado (ej: Cliente o Técnico) intenta forzar la URL
+  console.warn(`🔒 [AdminGuard] Restricción RBAC activada para el rol: [${userRole}] en la ruta: /${path}`);
+  void router.navigate(['/dashboard']);
+  return false;
 };

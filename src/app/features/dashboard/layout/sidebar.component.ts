@@ -1,13 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutService } from '../../../core/services/layout.service';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-
-
 
 // ==================== INTERFACES ====================
 interface SubItem {
@@ -23,98 +20,65 @@ interface MenuItem {
   subItems: SubItem[];
 }
 
-// ==================== CONSTANTES ====================
+// ==================== CONSTANTES DE NAVEGACIÓN MULTI-TENANT ====================
 const MENU_ITEMS: MenuItem[] = [
-  // Paquete 1: Identidad y Accesos
   {
     id: 'identidad',
     label: 'Identidad y Accesos',
     icon: '🔐',
     subItems: [
-      {
-        label: 'Mi Perfil',
-        path: 'perfil',
-        roles: ['Administrador', 'Tecnico', 'Cliente', 'GestorTaller'],
-      },
+      { label: 'Mi Perfil', path: 'perfil', roles: ['Administrador', 'Tecnico', 'Cliente', 'Gestor'] },
       { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['Administrador'] },
       { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['Administrador'] },
     ],
   },
-
-  // Paquete 2: Cuentas y Vehículos
   {
     id: 'cuentas',
     label: 'Cuentas y Vehículos',
     icon: '🚙',
     subItems: [
       { label: 'Mis Vehículos', path: 'vehiculos', roles: ['Cliente'] },
-      { label: 'Gestión de Talleres', path: 'talleres', roles: ['GestorTaller', 'Administrador'] },
-      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['GestorTaller', 'Administrador'] },
+      { label: 'Gestión de Talleres', path: 'talleres', roles: ['Administrador', 'Gestor'] },
+      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['Gestor'] },
     ],
   },
-
-  // Paquete 3: Captura de Emergencias e IA
   {
     id: 'emergencias',
     label: 'Captura de Emergencias',
     icon: '🆘',
     subItems: [
       { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['Cliente'] },
-      {
-        label: 'Historial de Incidentes',
-        path: 'historial-incidentes',
-        roles: ['Cliente', 'Administrador'],
-      },
+      { label: 'Historial de Incidentes', path: 'historial-incidentes', roles: ['Cliente', 'Administrador'] },
       { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['Administrador'] },
     ],
   },
-
-  // Paquete 4: Despacho Operativo e Inventario
   {
     id: 'despacho',
     label: 'Despacho Operativo',
     icon: '⚙️',
     subItems: [
-      {
-        label: 'Órdenes de Trabajo',
-        path: 'ordenes-trabajo',
-        roles: ['GestorTaller', 'Tecnico', 'Administrador'],
-      },
+      { label: 'Órdenes de Trabajo', path: 'ordenes-trabajo', roles: ['Gestor', 'Tecnico', 'Administrador'] },
       { label: 'Mi Inventario Móvil', path: 'inventario-movil', roles: ['Tecnico'] },
     ],
   },
-
-  // Paquete 5: Telemetría y Comunicación
   {
     id: 'telemetria',
     label: 'Telemetría y Comunicación',
     icon: '📡',
     subItems: [
-      {
-        label: 'Rastreo en Vivo',
-        path: 'rastreo-vivo',
-        roles: ['Cliente', 'GestorTaller', 'Administrador'],
-      },
-      {
-        label: 'Bandeja de Mensajes',
-        path: 'mensajes',
-        roles: ['Administrador', 'Tecnico', 'Cliente'],
-      },
+      { label: 'Rastreo en Vivo', path: 'rastreo-vivo', roles: ['Cliente', 'Gestor', 'Administrador'] },
+      { label: 'Bandeja de Mensajes', path: 'mensajes', roles: ['Administrador', 'Tecnico', 'Cliente'] },
     ],
   },
-
-  // Paquete 6: Finanzas y B2B
   {
     id: 'finanzas',
     label: 'Finanzas y B2B',
     icon: '💰',
     subItems: [
-      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['Cliente', 'GestorTaller'] },
+      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['Cliente', 'Gestor'] },
       { label: 'Panel de Comisiones', path: 'comisiones', roles: ['Administrador'] },
     ],
   },
-
-  // Paquete 7: Auditoría y Logs
   {
     id: 'auditoria',
     label: 'Auditoría y Logs',
@@ -123,10 +87,9 @@ const MENU_ITEMS: MenuItem[] = [
       { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['Administrador'] },
     ],
   },
-
-   {
+  {
     id: 'empresa',
-    label: 'Gestion de Empresas',
+    label: 'Gestión de Empresas',
     icon: '🏢',
     subItems: [
       { label: 'Empresas', path: '/dashboard/gestion-empresas', roles: ['superAdmin'] },
@@ -134,89 +97,17 @@ const MENU_ITEMS: MenuItem[] = [
   },
 ];
 
-// ==================== COMPONENTE ====================
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
-  template: `
-    <aside
-      class="sidebar"
-      [class.sidebar-open]="layoutService.isSidebarOpen()"
-    >
-      <!-- Logo -->
-      <div class="sidebar-logo">
-        <h1 class="logo-title">🚗 EmergAuto</h1>
-        <p class="logo-subtitle">Plataforma de Emergencias</p>
-      </div>
-
-      <!-- Navegación -->
-      <nav class="sidebar-nav">
-        @for (paquete of visiblePaquetes; track paquete.id) {
-          <div class="nav-section">
-            <!-- Botón del paquete (acordeón) -->
-            <button
-              class="nav-section-btn"
-              [class.active]="expandedPaquete === paquete.id"
-              (click)="togglePaquete(paquete.id)"
-              type="button"
-            >
-              <div class="nav-section-left">
-                <span class="nav-icon">{{ paquete.icon }}</span>
-                <span class="nav-label">{{ paquete.label }}</span>
-              </div>
-              <svg
-                class="nav-chevron"
-                [class.rotated]="expandedPaquete === paquete.id"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                />
-              </svg>
-            </button>
-
-            <!-- Sub-items (con animación) -->
-            @if (expandedPaquete === paquete.id) {
-              <div class="nav-submenu">
-                @for (subItem of paquete.subItems; track subItem.path) {
-                  <a
-                    class="nav-subitem"
-                    [routerLink]="subItem.path"
-                    routerLinkActive="active"
-                    (click)="onNavigation()"
-                  >
-                    <span class="nav-dot"></span>
-                    <span class="nav-subitem-label">{{ subItem.label }}</span>
-                  </a>
-                }
-              </div>
-            }
-          </div>
-        }
-      </nav>
-
-      <!-- Información del usuario (al fondo) -->
-      <div class="sidebar-footer">
-        <div class="user-info">
-          <p class="user-label">Conectado como:</p>
-          <p class="user-email">{{ userEmail }}</p>
-          <p class="user-role">Rol: {{ userRole }}</p>
-        </div>
-      </div>
-    </aside>
-  `,
+  templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   private readonly authService = inject(AuthService);
   readonly layoutService = inject(LayoutService);
-  private readonly destroyRef = inject(DestroyRef); // <--- Inyectar DestroyRef
+  private readonly destroyRef = inject(DestroyRef);
 
   userEmail = '';
   userRole = '';
@@ -224,63 +115,52 @@ export class SidebarComponent {
 
   constructor() {
     this.authService.user$
-      .pipe(takeUntilDestroyed(this.destroyRef)) // <--- MAGIA: Se desuscribe automáticamente
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((user) => {
         if (user) {
           this.userEmail = user.email;
           this.userRole = this.getRoleName(user.id_rol);
+          localStorage.setItem('usuario_rol', this.userRole);
         }
       });
   }
 
-  /**
-   * Obtiene los paquetes visibles filtrados por rol
-   */
+  ngOnInit(): void {
+    this.userRole = localStorage.getItem('usuario_role') || localStorage.getItem('usuario_rol') || '';
+  }
+
   get visiblePaquetes(): MenuItem[] {
+    if (!this.userRole) return [];
+    
     return MENU_ITEMS.map((paquete) => ({
       ...paquete,
       subItems: paquete.subItems.filter((item) => this.hasRole(item.roles)),
     })).filter((paquete) => paquete.subItems.length > 0);
   }
 
-  /**
-   * Verificar si el usuario tiene el rol requerido
-   */
   private hasRole(itemRoles: string[]): boolean {
     const roleLower = this.userRole.toLowerCase();
     return itemRoles.some((r) => r.toLowerCase() === roleLower);
   }
 
-  /**
-   * Toggle para expandir/colapsar un paquete
-   */
-togglePaquete(paqueteId: string): void {
+  togglePaquete(paqueteId: string): void {
     this.expandedPaquete = this.expandedPaquete === paqueteId ? '' : paqueteId;
   }
 
-  /**
-   * Callback cuando se hace clic en un enlace de navegación
-   * Cierra el sidebar en móviles
-   */
   onNavigation(): void {
-    // Cerrar sidebar solo en móviles (ancho < 768px)
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       this.layoutService.closeSidebar();
     }
   }
 
-  /**
-   * Mapear id_rol a nombre descriptivo
-   */
   private getRoleName(id_rol: number): string {
     const roleMap: { [key: number]: string } = {
       1: 'superAdmin',
       2: 'Administrador',
-      3: 'GestorTaller',
+      3: 'Gestor',
       4: 'Tecnico',
       5: 'Cliente',
     };
     return roleMap[id_rol] || 'Cliente';
   }
 }
-

@@ -1,80 +1,59 @@
-/* ==================== LAYOUT PRINCIPAL ==================== */
+/* ==========================================================================
+   CONTEXTO GLOBAL Y DISEÑO RESPONSIVO (ESCRITORIO POR DEFECTO)
+   ========================================================================== */
 .dashboard-container {
-  display: grid;
-  height: 100vh;
-  background-color: #f3f4f6;
-  overflow: hidden;
+  display: flex;
+  min-height: 100vh;
+  background-color: #0f172a; /* Slate 900 */
+  color: #f8fafc;
+  overflow-x: hidden;
 }
 
-/* En desktop (>= 768px): Mostrar grid con sidebar */
-@media (min-width: 768px) {
-  .main-wrapper {
-    margin-left: 16rem;
-  }
-}
-
-/* En móviles (< 768px): Grid solo con contenido, sidebar es position fixed */
-@media (max-width: 767px) {
-  .dashboard-container {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ==================== SIDEBAR ==================== */
-/* El sidebar tiene width dinámico (0 o 16rem) controlado por el componente */
-
-/* ==================== SIDEBAR OVERLAY ==================== */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 30;
-  transition: opacity 0.3s ease;
-}
-
-/* Mostrar overlay solo en móviles (< 768px) */
-@media (min-width: 768px) {
-  .sidebar-overlay {
-    display: none;
-  }
-}
-
-/* ==================== MAIN WRAPPER ==================== */
+/* El Wrapper empuja su contenido dejando espacio para el Sidebar fijo (260px) */
 .main-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  height: 100vh;
-  overflow: hidden;
-  transition: margin-left 0.3s ease;
+  min-width: 0;
+  margin-left: 260px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==================== MAIN CONTENT ==================== */
+/* Cuando el sidebar se colapsa en Web, el contenido se expande */
+.dashboard-container.sidebar-collapsed .main-wrapper {
+  margin-left: 70px; /* Ancho del mini-sidebar */
+}
+
+/* Contenedor de las páginas hijas del Router */
 .main-content {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2rem;
-  padding-top: 5rem; /* Space for header */
+  padding: 1.5rem;
+  background-color: #0f172a;
 }
 
-/* ==================== SCROLL CUSTOMIZACIÓN ==================== */
-.main-content::-webkit-scrollbar {
-  width: 8px;
+/* ==========================================================================
+   RESPONSIVO: MÓVILES Y TABLETS (Menos de 1024px)
+   ========================================================================== */
+@media (max-width: 1023.98px) {
+  .main-wrapper {
+    margin-left: 0 !important; /* El contenido ocupa el 100% en móvil */
+  }
+
+  /* Fondo oscurecido con efecto cristal */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(2, 6, 23, 0.6); /* Slate 950 con opacidad */
+    backdrop-filter: blur(4px);
+    z-index: 40; /* Por debajo del sidebar (z-50) pero sobre el contenido */
+    animation: fadeIn 0.2s ease-out forwards;
+  }
 }
 
-.main-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.main-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

@@ -1,79 +1,102 @@
-import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuarioCreate } from '../../core/models/auth.model';
+
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div class="w-full max-w-md bg-white shadow rounded-2xl p-6">
-        <h1 class="text-2xl font-semibold mb-6 text-center">Registro</h1>
+    <div class="min-h-screen flex items-center justify-center bg-slate-950 p-4 antialiased text-slate-200">
+      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+        
+        <!-- Identidad de la Plataforma -->
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-black text-white tracking-tight">🚗 EmergAuto</h1>
+          <p class="text-slate-400 text-xs mt-1 uppercase tracking-wider font-semibold">Registro de Nuevo Cliente</p>
+        </div>
 
+        <!-- Formulario Reactivo Estilizado -->
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+          
+          <!-- Bloque en Paralelo: Nombre y Apellido -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nombre</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-white text-sm focus:outline-none transition-colors"
+                placeholder="Juan"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Apellido</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-white text-sm focus:outline-none transition-colors"
+                placeholder="Pérez"
+              />
+            </div>
+          </div>
+
+          <!-- Correo Electrónico -->
           <div>
-            <label class="block text-sm font-medium mb-1">Email</label>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Correo Electrónico</label>
             <input
               type="email"
               formControlName="email"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+              class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-white text-sm focus:outline-none transition-colors font-mono"
+              placeholder="correo@ejemplo.com"
             />
           </div>
 
+          <!-- Terminal Telefónica -->
           <div>
-            <label class="block text-sm font-medium mb-1">Teléfono</label>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Número de Teléfono</label>
             <input
               type="text"
               formControlName="telefono"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+              class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-white text-sm focus:outline-none transition-colors"
+              placeholder="7XXXXXXX"
             />
           </div>
 
+          <!-- Contraseña de Acceso -->
           <div>
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input
-              type="text"
-              formControlName="nombre"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido</label>
-            <input
-              type="text"
-              formControlName="apellido"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Password</label>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Contraseña</label>
             <input
               type="password"
               formControlName="password"
-              class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+              class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-3 py-2 text-white text-sm focus:outline-none transition-colors"
+              placeholder="••••••••"
             />
           </div>
 
-          <p class="text-red-600 text-sm" *ngIf="errorMessage">{{ errorMessage }}</p>
+          <!-- Alertas del Servidor Backend -->
+          <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-900/50 text-rose-400 text-xs font-medium" *ngIf="errorMessage">
+            ⚠️ {{ errorMessage }}
+          </div>
 
+          <!-- Botón de Envío Interactivo -->
           <button
             type="submit"
             [disabled]="loading"
-            class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-60"
+            class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg hover:shadow-indigo-600/20 disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-wider text-xs"
           >
-            {{ loading ? 'Registrando...' : 'Crear cuenta' }}
+            {{ loading ? 'Sincronizando...' : 'Crear Cuenta Operativa' }}
           </button>
 
-          <p class="text-sm text-center">
-            ¿Ya tienes cuenta?
-            <a routerLink="/login" class="text-blue-600 hover:underline">Inicia sesión</a>
+          <!-- Retorno a Autenticación -->
+          <p class="text-xs text-center text-slate-400 mt-4">
+            ¿Ya eres miembro del ecosistema?
+            <a routerLink="/login" class="text-indigo-400 hover:text-indigo-300 hover:underline font-semibold transition-colors">Inicia sesión</a>
           </p>
         </form>
       </div>
@@ -88,14 +111,19 @@ export class RegisterComponent {
   loading = false;
   errorMessage = '';
 
-  readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    telefono: ['', [Validators.required, Validators.minLength(7)]],
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    apellido: ['', [Validators.required, Validators.minLength(2)]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    id_rol: [3, [Validators.required, Validators.minLength(1)]],
-  });
+  // 🛡️ CONFIGURACIÓN DE SEGURIDAD MÁXIMA: Forzamos el ID 5 (Cliente) por defecto
+  readonly form = this.formBuilderGroup();
+
+  private formBuilderGroup() {
+    return this.fb.nonNullable.group({
+      email: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required, Validators.minLength(7)]],
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      apellido: ['', [Validators.required, Validators.minLength(2)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      id_rol: [5, [Validators.required]], // 🌟 CORREGIDO: Mapeo nativo a Cliente para resguardar el RBAC
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -114,7 +142,7 @@ export class RegisterComponent {
       .subscribe({
         next: () => void this.router.navigate(['/dashboard']),
         error: (err: HttpErrorResponse) => {
-          this.errorMessage = err.error?.detail ?? 'No se pudo registrar el usuario.';
+          this.errorMessage = err.error?.detail ?? 'No se pudo procesar el alta de la cuenta.';
         },
       });
   }

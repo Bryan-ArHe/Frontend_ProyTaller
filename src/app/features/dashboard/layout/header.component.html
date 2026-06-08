@@ -1,0 +1,42 @@
+<header class="app-header">
+  <!-- Sección Izquierda: Control Sidebar y Datos de Sesión -->
+  <div class="header-left">
+    
+    <!-- 🖥️ BOTÓN HAMBURGUESA (SOLO ESCRITORIO)
+         Integrado perfectamente al inicio del header. `hidden lg:flex` asegura que desaparezca en móviles. -->
+    <button
+      type="button"
+      class="hidden lg:flex items-center justify-center w-10 h-10 bg-slate-700/40 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-all duration-200 border border-slate-600/30"
+      (click)="layoutService.toggleSidebar()"
+      [title]="layoutService.isSidebarOpen() ? 'Colapsar menú' : 'Expandir menú'"
+    >
+      <span class="text-xl font-bold leading-none">
+        {{ layoutService.isSidebarOpen() ? '✕' : '☰' }}
+      </span>
+    </button>
+
+    <!-- Saludo Personalizado e Intuitivo -->
+    <div class="user-greeting">
+      <div class="greeting-row">
+        <h2 class="greeting-title">¡Hola, {{ userName }}!</h2>
+        
+        <!-- Badge Dinámico de Rol para la Franquicia SaaS -->
+        <span class="role-badge" [ngClass]="{
+          'badge-admin': userRol === 'Administrador',
+          'badge-gestor': userRol === 'Gestor'
+        }">
+          {{ userRol }}
+        </span>
+      </div>
+      <p class="greeting-time">{{ fechaFormateada }}</p>
+    </div>
+  </div>
+
+  <!-- Sección Derecha: Acciones de Cuenta -->
+  <div class="header-right">
+    <button class="logout-btn" (click)="onLogout()">
+      <span class="logout-icon">🚪</span>
+      <span class="logout-text">Cerrar Sesión</span>
+    </button>
+  </div>
+</header>

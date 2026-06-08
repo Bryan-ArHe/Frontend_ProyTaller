@@ -11,141 +11,154 @@ interface PermisoConEstado extends Permiso {
 
 /**
  * Componente para gestionar Roles y sus Permisos
- * Solo accesible para administradores
+ * Solo accesible para administradores corporativos (RBAC)
  */
 @Component({
   selector: 'app-gestion-roles',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="p-2 sm:p-4 antialiased text-slate-200">
       <div class="max-w-7xl mx-auto">
-        <!-- Encabezado -->
+        <!-- 🔐 ENCABEZADO DEL PANEL -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Gestión de Roles y Permisos</h1>
-          <p class="text-gray-600 mt-2">Configura los permisos para cada rol del sistema</p>
+          <h1 class="text-3xl font-extrabold text-white tracking-tight">Gestión de Roles y Permisos</h1>
+          <p class="text-slate-400 mt-1 text-sm">Configura las directivas de seguridad perimetral para cada rol del ecosistema</p>
         </div>
 
-        <!-- Estado de carga inicial -->
+        <!-- 🔄 ESTADO DE CARGA INICIAL -->
         @if (cargandoInicial()) {
-          <div class="flex justify-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div class="flex justify-center py-16">
+            <div class="flex flex-col items-center gap-4">
+              <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+              <p class="text-slate-400 text-sm">Cargando matriz de seguridad corporativa...</p>
+            </div>
           </div>
         }
 
         @if (!cargandoInicial()) {
           <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- PANEL IZQUIERDO: LISTA DE ROLES -->
+            <!-- PANEL IZQUIERDO: LISTA DE ROLES (Estilo Acordeón/Botón Slate) -->
             <div class="lg:col-span-1">
-              <div class="bg-white rounded-lg shadow-sm p-6 sticky top-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">📋 Roles Disponibles</h2>
+              <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 sticky top-6 backdrop-blur-sm shadow-xl">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <span>📋</span> Roles del Ecosistema
+                </h2>
 
-                <!-- Error al cargar roles -->
+                <!-- Control de excepciones al cargar roles -->
                 @if (errorRoles()) {
-                  <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                    <p class="text-red-700 text-sm">❌ {{ errorRoles() }}</p>
+                  <div class="bg-rose-950/30 border border-rose-900/40 rounded-xl p-4 mb-4">
+                    <p class="text-rose-400 text-xs font-medium">❌ {{ errorRoles() }}</p>
                   </div>
                 }
 
-                <!-- Lista de roles -->
-                <div class="space-y-2">
+                <!-- Lista de roles interactiva -->
+                <div class="space-y-2.5">
                   @for (rol of roles(); track rol.id_rol) {
                     <button
                       (click)="seleccionarRol(rol)"
-                      [class.bg-blue-100]="rolSeleccionado()?.id_rol === rol.id_rol"
-                      [class.border-blue-500]="rolSeleccionado()?.id_rol === rol.id_rol"
-                      class="w-full text-left px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
+                      [class.bg-indigo-950\/40]="rolSeleccionado()?.id_rol === rol.id_rol"
+                      [class.border-indigo-500]="rolSeleccionado()?.id_rol === rol.id_rol"
+                      [class.shadow-indigo-500\/5]="rolSeleccionado()?.id_rol === rol.id_rol"
+                      class="w-full text-left px-4 py-3.5 rounded-xl border border-slate-800/80 hover:border-slate-700/80 bg-slate-950/40 hover:bg-slate-900/40 transition-all duration-200 group"
                     >
-                      <p class="font-semibold text-gray-900">{{ rol.nombre }}</p>
-                      <p class="text-xs text-gray-600 mt-1">{{ rol.descripcion }}</p>
+                      <p class="font-bold text-sm text-slate-200 group-hover:text-white transition-colors"
+                         [class.text-indigo-400]="rolSeleccionado()?.id_rol === rol.id_rol">
+                        {{ rol.nombre }}
+                      </p>
+                      <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">{{ rol.descripcion }}</p>
                     </button>
                   }
                 </div>
 
                 @if (roles().length === 0) {
-                  <div class="text-center py-8">
-                    <p class="text-gray-500">No hay roles disponibles</p>
+                  <div class="text-center py-8 text-slate-500 text-sm">
+                    No hay roles mapeados en el sistema.
                   </div>
                 }
               </div>
             </div>
 
-            <!-- PANEL DERECHO: GESTIÓN DE PERMISOS -->
+            <!-- PANEL DERECHO: MATRIZ DE ASIGNACIÓN DE PERMISOS -->
             <div class="lg:col-span-3">
               @if (rolSeleccionado()) {
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                  <!-- Encabezado del rol -->
-                  <div class="mb-8 pb-6 border-b border-gray-200">
-                    <h2 class="text-2xl font-bold text-gray-900">
-                      {{ rolSeleccionado()?.nombre }}
-                    </h2>
-                    <p class="text-gray-600 mt-2">{{ rolSeleccionado()?.descripcion }}</p>
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm">
+                  <!-- Encabezado del rol activo -->
+                  <div class="mb-6 pb-6 border-b border-slate-800/80">
+                    <div class="flex items-center gap-3">
+                      <h2 class="text-2xl font-black text-white tracking-tight">
+                        {{ rolSeleccionado()?.nombre }}
+                      </h2>
+                      <span class="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 font-mono text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                        ID: {{ rolSeleccionado()?.id_rol }}
+                      </span>
+                    </div>
+                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">{{ rolSeleccionado()?.descripcion }}</p>
                   </div>
 
-                  <!-- Estado de carga de permisos -->
+                  <!-- Estado de carga interno para permisos -->
                   @if (cargandoPermisos()) {
-                    <div class="flex justify-center py-12">
-                      <div
-                        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
-                      ></div>
+                    <div class="flex justify-center py-16">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                     </div>
                   }
 
                   @if (!cargandoPermisos()) {
-                    <!-- Error al cargar permisos -->
+                    <!-- Error interno al cargar permisos -->
                     @if (errorPermisos()) {
-                      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                        <p class="text-red-700">❌ {{ errorPermisos() }}</p>
+                      <div class="bg-rose-950/30 border border-rose-900/40 rounded-xl p-4 mb-6">
+                        <p class="text-rose-400 text-sm font-medium">❌ {{ errorPermisos() }}</p>
                         <button
                           (click)="recargarPermisos()"
-                          class="mt-2 text-red-600 hover:text-red-700 underline text-sm"
+                          class="mt-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider underline"
                         >
-                          Reintentar
+                          Forzar Sincronización
                         </button>
                       </div>
                     }
 
-                    <!-- Grid de Permisos -->
+                    <!-- Grid de Permisos Modulares -->
                     <div class="mb-8">
-                      <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                        🔒 Permisos del Sistema
+                      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                        <span>🔒</span> Directivas de Operación Disponibles
                       </h3>
 
                       @if (permisosConEstado().length > 0) {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                           @for (permiso of permisosConEstado(); track permiso.id_permiso) {
                             <div
-                              class="flex items-start p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
-                              [class.bg-blue-50]="permiso.asignado"
+                              (click)="togglePermiso(permiso.id_permiso)"
+                              class="flex items-start p-4 border border-slate-800 hover:border-slate-700 rounded-xl transition-all cursor-pointer bg-slate-950/20 select-none group"
+                              [class.bg-indigo-950\/10]="permiso.asignado"
+                              [class.border-indigo-500\/30]="permiso.asignado"
                             >
-                              <!-- Checkbox -->
-                              <div class="flex items-center h-6 mr-4 flex-shrink-0">
+                              <!-- Checkbox Estilizado Dark -->
+                              <div class="flex items-center h-5 mr-4 flex-shrink-0" (click)="$event.stopPropagation()">
                                 <input
                                   type="checkbox"
                                   [id]="'permiso_' + permiso.id_permiso"
                                   [checked]="permiso.asignado"
                                   (change)="togglePermiso(permiso.id_permiso)"
                                   [disabled]="guardandoPermisos()"
-                                  class="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer disabled:opacity-50"
+                                  class="w-4 h-4 bg-slate-950 border-slate-800 text-indigo-600 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                                 />
                               </div>
 
-                              <!-- Label -->
-                              <label
-                                [for]="'permiso_' + permiso.id_permiso"
-                                class="flex-1 cursor-pointer select-none"
-                              >
-                                <p class="font-semibold text-gray-900">{{ permiso.nombre }}</p>
-                                <p class="text-sm text-gray-600 mt-1">{{ permiso.descripcion }}</p>
-                              </label>
+                              <!-- Textos descriptivos -->
+                              <div class="flex-1">
+                                <p class="font-bold text-sm text-slate-200 group-hover:text-white transition-colors"
+                                   [class.text-indigo-400]="permiso.asignado">
+                                  {{ permiso.nombre }}
+                                </p>
+                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ permiso.descripcion }}</p>
+                              </div>
 
-                              <!-- Indicador de cambio -->
+                              <!-- Indicador visual de cambio en memoria (Save Badge) -->
                               @if (permisoCambio(permiso.id_permiso)) {
-                                <div class="ml-2 flex-shrink-0">
-                                  <span
-                                    class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 rounded-full"
-                                  >
-                                    <span class="text-xs text-yellow-700">💾</span>
+                                <div class="ml-2 flex-shrink-0 animate-in fade-in zoom-in-95 duration-150">
+                                  <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-950/40 border border-amber-800/40 rounded-lg text-xs"
+                                        title="Cambio pendiente de guardar">
+                                    💾
                                   </span>
                                 </div>
                               }
@@ -153,50 +166,50 @@ interface PermisoConEstado extends Permiso {
                           }
                         </div>
                       } @else {
-                        <div class="text-center py-12 bg-gray-50 rounded-lg">
-                          <p class="text-gray-500">No hay permisos disponibles</p>
+                        <div class="text-center py-12 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-500 text-sm">
+                          No hay directivas de permisos mapeadas en el núcleo del sistema.
                         </div>
                       }
                     </div>
 
-                    <!-- Botones de acción -->
-                    <div class="flex gap-4 pt-6 border-t border-gray-200">
+                    <!-- Botonera de persistencia -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-800/80">
                       <button
                         (click)="restablecerPermisos()"
                         [disabled]="!tienePermisosModificados() || guardandoPermisos()"
-                        class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 text-gray-900 font-semibold rounded-lg transition-colors"
+                        class="flex-1 px-4 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         ↩️ Revertir Cambios
                       </button>
                       <button
                         (click)="guardarPermisos()"
                         [disabled]="!tienePermisosModificados() || guardandoPermisos()"
-                        class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+                        class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg hover:shadow-indigo-600/20 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         @if (guardandoPermisos()) {
-                          <span class="animate-spin">⚙️</span>
-                          <span>Guardando...</span>
+                          <span class="animate-spin inline-block mr-1.5">⚙️</span>
+                          <span>Guardando Cambios...</span>
                         } @else {
-                          ✅ Guardar Cambios
+                          ✅ Confirmar Cambios
                         }
                       </button>
                     </div>
 
-                    <!-- Mensaje de éxito -->
+                    <!-- Banner de Confirmación Exitosas -->
                     @if (exitoGuardado()) {
-                      <div class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p class="text-green-700">✅ {{ exitoGuardado() }}</p>
+                      <div class="mt-4 bg-emerald-950/30 border border-emerald-900/40 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <p class="text-emerald-400 text-xs font-medium">{{ exitoGuardado() }}</p>
                       </div>
                     }
                   }
                 </div>
               } @else {
-                <!-- Sin rol seleccionado -->
-                <div class="bg-white rounded-lg shadow-sm p-12 text-center">
-                  <div class="text-6xl mb-4">👈</div>
-                  <h3 class="text-xl font-semibold text-gray-900 mb-2">Selecciona un rol</h3>
-                  <p class="text-gray-600">
-                    Elige un rol de la lista de la izquierda para ver y gestionar sus permisos
+                <!-- Estado pasivo sin rol seleccionado (Móviles/Cargas atenuadas) -->
+                <div class="bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-2xl p-12 text-center">
+                  <div class="text-5xl mb-4 filter drop-shadow-md">👈</div>
+                  <h3 class="text-lg font-bold text-white mb-1">Selecciona un Rol</h3>
+                  <p class="text-slate-500 text-sm max-w-sm mx-auto leading-relaxed">
+                    Elige un perfil institucional de la columna de control para auditar y mapear sus permisos operativos en el Tenant.
                   </p>
                 </div>
               }
@@ -211,13 +224,11 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
   private readonly rolService = inject(RolService);
   private destroy$ = new Subject<void>();
 
-  // Signals para reactividad
   roles = signal<Rol[]>([]);
   rolSeleccionado = signal<Rol | null>(null);
   permisosConEstado = signal<PermisoConEstado[]>([]);
   permisosOriginales = signal<number[]>([]);
 
-  // Estado de carga y errores
   cargandoInicial = signal(false);
   cargandoPermisos = signal(false);
   guardandoPermisos = signal(false);
@@ -225,7 +236,6 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
   errorPermisos = signal<string | null>(null);
   exitoGuardado = signal<string | null>(null);
 
-  // Track de cambios
   private permisosModificados = new Set<number>();
 
   ngOnInit(): void {
@@ -237,9 +247,6 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Carga todos los roles disponibles
-   */
   private cargarRoles(): void {
     this.cargandoInicial.set(true);
     this.errorRoles.set(null);
@@ -252,22 +259,18 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
           this.roles.set(roles);
           this.cargandoInicial.set(false);
 
-          // Seleccionar el primer rol automáticamente
           if (roles.length > 0) {
             this.seleccionarRol(roles[0]);
           }
         },
         error: (err) => {
           console.error('Error cargando roles:', err);
-          this.errorRoles.set(err.detalle || 'Error cargando roles');
+          this.errorRoles.set(err.detalle || 'Error al conectar con la pasarela de seguridad.');
           this.cargandoInicial.set(false);
         },
       });
   }
 
-  /**
-   * Selecciona un rol y carga sus permisos
-   */
   seleccionarRol(rol: Rol): void {
     this.rolSeleccionado.set(rol);
     this.exitoGuardado.set(null);
@@ -275,9 +278,6 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
     this.recargarPermisos();
   }
 
-  /**
-   * Recarga los permisos del rol seleccionado
-   */
   recargarPermisos(): void {
     const rolSeleccionado = this.rolSeleccionado();
     if (!rolSeleccionado) return;
@@ -285,81 +285,77 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
     this.cargandoPermisos.set(true);
     this.errorPermisos.set(null);
 
-    // Obtener todos los permisos del sistema
     this.rolService
       .getPermisos()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (permisosGlobales) => {
-          // Los permisos del rol ya vienen en rolSeleccionado.permisos
           const idsPermisosRol = (rolSeleccionado.permisos || []).map((p) => p.id_permiso);
           this.permisosOriginales.set([...idsPermisosRol]);
 
-          // Construir array de permisos con estado
-          const permisosConEstado = permisosGlobales.map((p) => ({
+          const mapeados = permisosGlobales.map((p) => ({
             ...p,
             asignado: idsPermisosRol.includes(p.id_permiso),
           }));
 
-          this.permisosConEstado.set(permisosConEstado);
+          this.permisosConEstado.set(mapeados);
           this.cargandoPermisos.set(false);
           this.permisosModificados.clear();
         },
         error: (err) => {
           console.error('Error cargando permisos globales:', err);
-          this.errorPermisos.set(err.detalle || 'Error cargando permisos');
+          this.errorPermisos.set(err.detalle || 'No se pudo sincronizar la matriz de permisos globales.');
           this.cargandoPermisos.set(false);
         },
       });
   }
 
   /**
-   * Toggle para activar/desactivar un permiso
+   * Toggle optimizado inyectando el cambio de manera atómica e inmutable en el Signal
    */
   togglePermiso(idPermiso: number): void {
-    const permisos = this.permisosConEstado();
-    const permiso = permisos.find((p) => p.id_permiso === idPermiso);
+    if (this.guardandoPermisos()) return;
 
-    if (permiso) {
-      permiso.asignado = !permiso.asignado;
-      this.permisosConEstado.set([...permisos]);
+    // 🚀 MEJORA REACTIVA: Mapeamos de forma inmutable garantizando el ciclo de vida del Signal
+    const actualizados = this.permisosConEstado().map((p) => {
+      if (p.id_permiso === idPermiso) {
+        return { ...p, asignado: !p.asignado };
+      }
+      return p;
+    });
 
-      // Marcar como modificado
+    this.permisosConEstado.set(actualizados);
+
+    // Evaluamos si el estado mutado difiere del original para activar o limpiar el badge de guardado (Set)
+    const esOriginal = this.permisosOriginales().includes(idPermiso);
+    const estadoActual = actualizados.find((p) => p.id_permiso === idPermiso)?.asignado;
+
+    if (estadoActual === esOriginal) {
+      this.permisosModificados.delete(idPermiso);
+    } else {
       this.permisosModificados.add(idPermiso);
     }
   }
 
-  /**
-   * Verifica si hay permisos modificados
-   */
   tienePermisosModificados(): boolean {
     return this.permisosModificados.size > 0;
   }
 
-  /**
-   * Verifica si un permiso fue modificado
-   */
   permisoCambio(idPermiso: number): boolean {
     return this.permisosModificados.has(idPermiso);
   }
 
-  /**
-   * Revierte los cambios a los permisos
-   */
   restablecerPermisos(): void {
     const idsOriginales = this.permisosOriginales();
-    const permisos = this.permisosConEstado().map((p) => ({
+    const restaurados = this.permisosConEstado().map((p) => ({
       ...p,
       asignado: idsOriginales.includes(p.id_permiso),
     }));
 
-    this.permisosConEstado.set(permisos);
+    this.permisosConEstado.set(restaurados);
     this.permisosModificados.clear();
   }
 
-  /**
-   * Guarda los cambios de permisos
-   */
   guardarPermisos(): void {
     const rolId = this.rolSeleccionado()?.id_rol;
     if (!rolId) return;
@@ -367,7 +363,6 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
     this.guardandoPermisos.set(true);
     this.exitoGuardado.set(null);
 
-    // Obtener IDs de permisos seleccionados
     const permisosSeleccionados = this.permisosConEstado()
       .filter((p) => p.asignado)
       .map((p) => p.id_permiso);
@@ -379,17 +374,22 @@ export class GestionRolesComponent implements OnInit, OnDestroy {
         next: (rolActualizado) => {
           this.guardandoPermisos.set(false);
           this.exitoGuardado.set(
-            `✅ Permisos del rol "${rolActualizado.nombre}" actualizados exitosamente`,
+            `✅ Políticas de acceso para el rol "${rolActualizado.nombre}" reconfiguradas exitosamente.`
           );
           this.permisosModificados.clear();
           this.permisosOriginales.set([...permisosSeleccionados]);
+
+          // Actualizamos la referencia en memoria del rol seleccionado para reflejar sus nuevos permisos
+          if (this.rolSeleccionado()?.id_rol === rolActualizado.id_rol) {
+            this.rolSeleccionado.set(rolActualizado);
+          }
 
           setTimeout(() => this.exitoGuardado.set(null), 5000);
         },
         error: (err) => {
           console.error('Error guardando permisos:', err);
           this.guardandoPermisos.set(false);
-          alert(`❌ Error: ${err.detalle || 'No se pudieron guardar los permisos'}`);
+          alert(`❌ Error: El perímetro de seguridad rechazó los cambios de infraestructura.`);
         },
       });
   }

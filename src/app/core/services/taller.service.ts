@@ -26,4 +26,19 @@ export class TallerService {
   obtenerTaller(id: number): Observable<Taller> {
     return this.http.get<Taller>(`${this.apiUrl}/${id}/`);
   }
+
+  // 🌟 NUEVO MÉTODO: PATCH /talleres/{id_taller}/asignar-gestor
+  // Sincronizado con la lógica de asignación diferida de la plataforma SaaS
+  asignarGestor(idTaller: number, idGestor: number | null): Observable<any> {
+    // Si idGestor es null, pasamos un string vacío para limpiar el encargado en el backend
+    const queryParamGestor = idGestor ? idGestor.toString() : '';
+    
+    return this.http.patch<any>(
+      `${this.apiUrl}/${idTaller}/asignar-gestor`, 
+      null, // No enviamos cuerpo (body) ya que FastAPI lo recibe por Query Params
+      {
+        params: { id_gestor: queryParamGestor }
+      }
+    );
+  }
 }
