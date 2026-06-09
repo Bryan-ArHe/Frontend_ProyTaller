@@ -9,7 +9,7 @@ import { EmpresaSaaS } from '../models/empresa.model';
 })
 export class EmpresaService {
   private http = inject(HttpClient);
-  private API_URL = environment.apiUrl || 'http://127.0.0.1:8000'; // Fallback por si acaso
+  private API_URL = environment.apiUrl; //|| 'http://127.0.0.1:8000'; // Fallback por si acaso
 
   // 1. Obtener todas las empresas (usuarios con rol Administrador)
   getEmpresas(): Observable<any[]> {
