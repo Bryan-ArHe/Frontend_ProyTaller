@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment'; // Usa tus entornos
+import { environment } from '../../../environments/environment';
 import { EmpresaSaaS } from '../models/empresa.model';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { EmpresaSaaS } from '../models/empresa.model';
 })
 export class EmpresaService {
   private http = inject(HttpClient);
-  private API_URL = environment.apiUrl; //|| 'http://127.0.0.1:8000'; // Fallback por si acaso
+  private API_URL = environment.apiUrl || 'http://127.0.0.1:8000'; 
 
   // 1. Obtener todas las empresas (usuarios con rol Administrador)
   getEmpresas(): Observable<any[]> {
