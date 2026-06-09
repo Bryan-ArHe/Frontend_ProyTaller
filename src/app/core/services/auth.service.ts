@@ -24,14 +24,18 @@ export class AuthService {
   }
 
   login(data: LoginData): Observable<UsuarioResponse> {
-    // El backend espera OAuth2PasswordRequestForm (form-data)
+    // 🌟 LIMPIEZA PREVENTIVA: Vaciamos el estado anterior en memoria antes de la petición
+    this.userSubject.next(null);
+    localStorage.removeItem('usuario_rol');
+    localStorage.removeItem('usuario_nombre');
+
     const formData = new FormData();
-    formData.append('username', data.email); // OAuth2 usa 'username' no 'email'
+    formData.append('username', data.email);
     formData.append('password', data.password);
 
     return this.http.post<TokenResponse>(`${this.baseUrl}/login`, formData).pipe(
       tap((res) => this.setToken(res.access_token)),
-      switchMap(() => this.me()),
+      switchMap(() => this.me()), // Consume el nuevo perfil limpio del Gestor
       catchError((error: HttpErrorResponse) => this.handleError('Error en login', error)),
     );
   }
@@ -45,8 +49,19 @@ export class AuthService {
   }
 
   me(): Observable<UsuarioResponse> {
-    return this.http.get<UsuarioResponse>(`${this.baseUrl}/me`).pipe(
-      tap((user) => this.userSubject.next(user)),
+    return this.http.get<any>(`${this.baseUrl}/me`).pipe(
+      tap((user) => {
+        if (user) {
+          // 🌟 Forzamos a Angular a estampar los datos reales del JSON en caliente
+          const rolFinal = user.rol_nombre || 'Gestor';
+          
+          localStorage.setItem('usuario_rol', rolFinal);
+          localStorage.setItem('usuario_nombre', user.nombre || 'Gestor');
+          
+          // Actualizamos el BehaviorSubject para que todo el Front se entere del cambio
+          this.userSubject.next(user);
+        }
+      }),
       catchError((error: HttpErrorResponse) => this.handleError('Error obteniendo usuario', error)),
     );
   }
@@ -54,8 +69,10 @@ export class AuthService {
   logout(): void {
     sessionStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario_rol');
     this.userSubject.next(null);
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/auth/login']); // 🌟 Asegura la subruta si tu módulo usa /auth/login
   }
 
   getToken(): string | null {
@@ -71,7 +88,14 @@ export class AuthService {
   }
 
   private setToken(token: string): void {
+    // Limpiamos selectivamente antes de estampar el nuevo JWT
+    sessionStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem('token');
+
     sessionStorage.setItem(this.tokenKey, token);
+    localStorage.setItem(this.tokenKey, token);
+    localStorage.setItem('token', token);
   }
 
   private handleError(mensaje: string, error: HttpErrorResponse) {

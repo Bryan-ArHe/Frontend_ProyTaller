@@ -393,7 +393,7 @@ export class GestionUsuariosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error cargando roles, activando fallback corporativo unificado:', err);
-          // 🌟 CORREGIDO: Matriz de roles homologada estrictamente con el backend Multi-tenant de la Opción B
+          // 🌟 CORREGIDO: Matriz de roles homologada estrictamente con el backend Multi-tenant
           this.rolesDisponibles.set([
             { id_rol: 1, nombre: 'superAdmin', descripcion: 'Dueño de la Infraestructura SaaS' },
             { id_rol: 2, nombre: 'Administrador', descripcion: 'Director General de la Franquicia' },

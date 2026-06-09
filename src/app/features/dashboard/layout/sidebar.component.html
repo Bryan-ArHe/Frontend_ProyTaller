@@ -5,7 +5,7 @@
     <p class="logo-subtitle">Plataforma de Emergencias</p>
   </div>
 
-  <!-- Navegación Dinámica Filtrada por RBAC -->
+  <!-- Navegación Dinámica Filtrada por RBAC (Control Flow Moderno) -->
   <nav class="sidebar-nav">
     @for (paquete of visiblePaquetes; track paquete.id) {
       <div class="nav-section">
@@ -40,9 +40,10 @@
         @if (expandedPaquete === paquete.id) {
           <div class="nav-submenu">
             @for (subItem of paquete.subItems; track subItem.path) {
+              <!-- 🌟 MEJORA PREVENTIVA: Si el path ya incluye '/dashboard/', lo usa directo; si no, Angular lo añade de forma relativa -->
               <a
                 class="nav-subitem"
-                [routerLink]="subItem.path"
+                [routerLink]="subItem.path.startsWith('/dashboard/') ? subItem.path : subItem.path"
                 routerLinkActive="active"
                 (click)="onNavigation()"
               >

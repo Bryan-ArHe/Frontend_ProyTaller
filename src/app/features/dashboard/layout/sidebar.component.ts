@@ -20,16 +20,16 @@ interface MenuItem {
   subItems: SubItem[];
 }
 
-// ==================== CONSTANTES DE NAVEGACIÓN MULTI-TENANT ====================
+// ==================== CONSTANTES DE NAVEGACIÓN MULTI-TENANT SINKRONIZADAS ====================
 const MENU_ITEMS: MenuItem[] = [
   {
     id: 'identidad',
     label: 'Identidad y Accesos',
     icon: '🔐',
     subItems: [
-      { label: 'Mi Perfil', path: 'perfil', roles: ['Administrador', 'Tecnico', 'Cliente', 'Gestor'] },
-      { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['Administrador'] },
-      { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['Administrador'] },
+      { label: 'Mi Perfil', path: 'perfil', roles: ['superAdmin', 'Administrador', 'Gestor', 'Tecnico', 'Cliente'] },
+      { label: 'Gestión de Usuarios', path: 'gestion-usuarios', roles: ['superAdmin', 'Administrador'] },
+      { label: 'Gestión de Roles', path: 'gestion-roles', roles: ['superAdmin', 'Administrador'] },
     ],
   },
   {
@@ -39,7 +39,7 @@ const MENU_ITEMS: MenuItem[] = [
     subItems: [
       { label: 'Mis Vehículos', path: 'vehiculos', roles: ['Cliente'] },
       { label: 'Gestión de Talleres', path: 'talleres', roles: ['Administrador', 'Gestor'] },
-      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['Gestor'] },
+      { label: 'Gestión de Técnicos', path: 'tecnicos', roles: ['Administrador', 'Gestor'] }, // 🌟 Sincronizado: Gestor y Admin controlan operarios
     ],
   },
   {
@@ -48,8 +48,8 @@ const MENU_ITEMS: MenuItem[] = [
     icon: '🆘',
     subItems: [
       { label: 'Reportar Incidente', path: 'reportar-incidente', roles: ['Cliente'] },
-      { label: 'Historial de Incidentes', path: 'historial-incidentes', roles: ['Cliente', 'Administrador'] },
-      { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['Administrador'] },
+      { label: 'Historial de Incidentes', path: 'historial-incidentes', roles: ['Cliente', 'Administrador', 'Gestor', 'Tecnico'] },
+      { label: 'Monitor de Triaje IA', path: 'monitor-triaje', roles: ['superAdmin', 'Administrador'] },
     ],
   },
   {
@@ -57,7 +57,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Despacho Operativo',
     icon: '⚙️',
     subItems: [
-      { label: 'Órdenes de Trabajo', path: 'ordenes-trabajo', roles: ['Gestor', 'Tecnico', 'Administrador'] },
+      { label: 'Órdenes de Trabajo', path: 'ordenes-trabajo', roles: ['Administrador', 'Gestor', 'Tecnico'] },
       { label: 'Mi Inventario Móvil', path: 'inventario-movil', roles: ['Tecnico'] },
     ],
   },
@@ -66,8 +66,8 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Telemetría y Comunicación',
     icon: '📡',
     subItems: [
-      { label: 'Rastreo en Vivo', path: 'rastreo-vivo', roles: ['Cliente', 'Gestor', 'Administrador'] },
-      { label: 'Bandeja de Mensajes', path: 'mensajes', roles: ['Administrador', 'Tecnico', 'Cliente'] },
+      { label: 'Rastreo en Vivo', path: 'rastreo-vivo', roles: ['Administrador', 'Gestor', 'Tecnico', 'Cliente'] },
+      { label: 'Bandeja de Mensajes', path: 'mensajes', roles: ['superAdmin', 'Administrador', 'Gestor', 'Tecnico', 'Cliente'] },
     ],
   },
   {
@@ -75,7 +75,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Finanzas y B2B',
     icon: '💰',
     subItems: [
-      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['Cliente', 'Gestor'] },
+      { label: 'Mis Pagos / Liquidaciones', path: 'pagos', roles: ['Gestor', 'Cliente'] },
       { label: 'Panel de Comisiones', path: 'comisiones', roles: ['Administrador'] },
     ],
   },
@@ -84,7 +84,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Auditoría y Logs',
     icon: '📋',
     subItems: [
-      { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['Administrador'] },
+      { label: 'Bitácora de Auditoría', path: 'bitacora', roles: ['superAdmin', 'Administrador'] }, // 🌟 superAdmin puede auditar logs del Core SaaS
     ],
   },
   {
@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
     label: 'Gestión de Empresas',
     icon: '🏢',
     subItems: [
-      { label: 'Empresas', path: '/dashboard/gestion-empresas', roles: ['superAdmin'] },
+      { label: 'Empresas Inquilinas', path: 'tenants', roles: ['superAdmin'] }, // 🌟 Unificado con tu dashboard.routes.ts
     ],
   },
 ];
@@ -125,9 +125,9 @@ export class SidebarComponent implements OnInit {
       });
   }
 
-  ngOnInit(): void {
-    this.userRole = localStorage.getItem('usuario_role') || localStorage.getItem('usuario_rol') || '';
-  }
+ ngOnInit(): void {
+  this.userRole = localStorage.getItem('usuario_rol') || ''; // 🌟 Correcto
+}
 
   get visiblePaquetes(): MenuItem[] {
     if (!this.userRole) return [];

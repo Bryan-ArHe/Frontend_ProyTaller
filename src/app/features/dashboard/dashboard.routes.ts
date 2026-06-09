@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
 import { HomeComponent } from './views/home/home.component';
-// Importamos tu único Guard centralizado
+import { EmpresasComponent } from '../empresas/empresas.component';
+import { TalleresComponent } from '../talleres/talleres.component';
+import { TecnicosComponent } from './views/tecnicos/tecnicos.component';
 import { AdminGuard } from '../../core/guards/admin.guard';
 
 export const dashboardRoutes: Routes = [
@@ -9,103 +11,31 @@ export const dashboardRoutes: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-      { path: '', component: HomeComponent },
+      { path: 'home', component: HomeComponent },
       
-      // Identidad y Accesos
-      {
-        path: 'perfil',
-        loadComponent: () => import('../identidad/perfil.component').then((m) => m.PerfilComponent),
-      },
-      {
-        path: 'gestion-usuarios',
-        loadComponent: () => import('../identidad/gestion-usuarios.component').then((m) => m.GestionUsuariosComponent),
+      // Vista exclusiva para el superAdmin de la Plataforma SaaS (Catálogo y aprovisionamiento)
+      { 
+        path: 'tenants', 
+        component: EmpresasComponent, 
         canActivate: [AdminGuard],
+        data: { roles: ['superAdmin'] } 
       },
-      {
-        path: 'gestion-roles',
-        loadComponent: () => import('../identidad/gestion-roles.component').then((m) => m.GestionRolesComponent),
+      
+      // Vista compartida: El Administrador (2) gestiona la red, el Gestor (3) visualiza su sucursal única
+      { 
+        path: 'sucursales', 
+        component: TalleresComponent, 
         canActivate: [AdminGuard],
+        data: { roles: ['Administrador', 'Gestor'] } 
       },
       
-      // Cuentas y Vehículos
-      {
-        path: 'vehiculos',
-        loadComponent: () => import('../vehiculos/lista-vehiculos.component').then((m) => m.ListaVehiculosComponent),
-      },
-      {
-        path: 'vehiculos/nuevo',
-        loadComponent: () => import('../vehiculos/form-vehiculo.component').then((m) => m.FormVehiculoComponent),
-      },
-      {
-        path: 'talleres',
-        loadComponent: () => import('../talleres/talleres.component').then((m) => m.TalleresComponent),
-        // Sin Guard: El Admin hace CRUD, el Gestor lee sucursal
-      },
-      {
-        path: 'tecnicos',
-        loadComponent: () => import('./views/tecnicos/tecnicos.component').then((m) => m.TecnicosComponent),
-        canActivate: [AdminGuard], // 🌟 REUTILIZADO: Permite ingresar al Gestor y al Admin
-      },
-      
-      // Emergencias
-      {
-        path: 'reportar-incidente',
-        loadComponent: () => import('../incidentes/reportar-incidente.component').then((m) => m.ReportarIncidenteComponent),
-      },
-      {
-        path: 'historial-incidentes',
-        loadComponent: () => import('./views/historial-incidentes/historial-incidentes.component').then((m) => m.HistorialIncidentesComponent),
-      },
-      {
-        path: 'monitor-triaje',
-        loadComponent: () => import('./views/monitor-triaje/monitor-triaje.component').then((m) => m.MonitorTriajeComponent),
+      // Gestión operativa de la nómina de técnicos asignados
+      { 
+        path: 'operadores', 
+        component: TecnicosComponent, 
         canActivate: [AdminGuard],
-      },
-      
-      // Despacho Operativo
-      {
-        path: 'ordenes-trabajo',
-        loadComponent: () => import('./views/ordenes-trabajo/ordenes-trabajo.component').then((m) => m.OrdenesTrabajoComponent),
-      },
-      {
-        path: 'inventario-movil',
-        loadComponent: () => import('./views/inventario-movil/inventario-movil.component').then((m) => m.InventarioMovilComponent),
-      },
-      
-      // Telemetría
-      {
-        path: 'rastreo-vivo',
-        loadComponent: () => import('./views/rastreo-vivo/rastreo-vivo.component').then((m) => m.RastreoVivoComponent),
-      },
-      {
-        path: 'mensajes',
-        loadComponent: () => import('./views/mensajes/mensajes.component').then((m) => m.MensajesComponent),
-      },
-      
-      // Finanzas
-      {
-        path: 'pagos',
-        loadComponent: () => import('./views/pagos/pagos.component').then((m) => m.PagosComponent),
-      },
-      {
-        path: 'comisiones',
-        loadComponent: () => import('./views/comisiones/comisiones.component').then((m) => m.ComisionesComponent),
-        canActivate: [AdminGuard],
-      },
-      
-      // Auditoría y Logs
-      {
-        path: 'bitacora',
-        loadComponent: () => import('./views/bitacora/bitacora.component').then((m) => m.BitacoraComponent),
-        canActivate: [AdminGuard],
-      },
-      
-      // Gestión de Empresas (Solo para SuperAdmin)
-      {
-        path: 'gestion-empresas',
-        loadComponent: () => import('../empresas/empresas.component').then((m) => m.EmpresasComponent),
-        canActivate: [AdminGuard], // 🌟 REUTILIZADO: Filtrará por debajo que solo sea superAdmin
+        data: { roles: ['Administrador', 'Gestor'] } 
       }
-    ],
-  },
+    ]
+  }
 ];
